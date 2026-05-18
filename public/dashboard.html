@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Vitals Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1320px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            padding: 24px 28px;
+            margin-bottom: 18px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        }
+        
+        .header h1 {
+            font-size: 1.6rem;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+        
+        .header p {
+            font-size: 0.98rem;
+            color: #6b7280;
+        }
+        
+        .status {
+            margin: 0 0 16px 0;
+            font-size: 0.92rem;
+            color: #4b5563;
+        }
+        
+        .status.loading {
+            opacity: 0.7;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 18px;
+            padding: 18px 18px 14px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+        }
+        
+        .chart-card:hover {
+            box-shadow: 0 14px 40px rgba(15, 23, 42, 0.08);
+        }
+        
+        .chart-title {
+            font-size: 1rem;
+            color: #111827;
+            margin-bottom: 12px;
+            font-weight: 650;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 290px;
+        }
+        
+        .info-box {
+            background: white;
+            border-radius: 14px;
+            padding: 14px 16px;
+            border: 1px solid #e5e7eb;
+            color: #374151;
+            font-size: 0.92rem;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.03);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin: 8px 0 18px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            color: #374151;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .tab-button.active {
+            background: #111827;
+            color: #ffffff;
+            border-color: #111827;
+        }
+
+        .tab-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .legend-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 10px 12px;
+            background: #fff;
+            color: #374151;
+            font-size: 0.92rem;
+            line-height: 1.35;
+        }
+
+        .legend-swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            flex: 0 0 14px;
+        }
+
+        .chart-tooltip {
+            position: absolute;
+            z-index: 20;
+            max-width: 260px;
+            pointer-events: none;
+            display: none;
+            background: rgba(17, 24, 39, 0.96);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: 0.82rem;
+            line-height: 1.45;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.2);
+            white-space: pre-line;
+        }
+
+        .chart-tooltip strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.88rem;
+        }
+
+        .summary-hero {
+            display: grid;
+            grid-template-columns: minmax(220px, 280px) 1fr;
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        .summary-score-card {
+            border-radius: 18px;
+            padding: 20px;
+            border: 1px solid #dbe4f0;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
+        }
+
+        .summary-score-value {
+            font-size: 3.4rem;
+            line-height: 1;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: #111827;
+        }
+
+        .summary-score-label {
+            margin-top: 8px;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .summary-score-note {
+            margin-top: 10px;
+            color: #6b7280;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .summary-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .summary-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            background: #ffffff;
+            padding: 14px 16px;
+        }
+
+        .summary-item-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .summary-item-text {
+            color: #4b5563;
+            font-size: 0.92rem;
+            line-height: 1.45;
+        }
+
+        .summary-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            background: #f8fafc;
+            color: #334155;
+            border: 1px solid #e2e8f0;
+        }
+
+        .summary-pill strong {
+            color: #111827;
+        }
+        
+        .error {
+            background: #fff1f2;
+            color: #9f1239;
+            border: 1px solid #fecdd3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-item-text {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .summary-pill {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-hero {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.35rem;
+            }
+
+            [style*="grid-template-columns: 1.5fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Health Vitals Dashboard</h1>
+            <p>Simple sleep screening with detailed analysis for heart rate, oxygen, and breathing signals</p>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Dashboard views">
+            <button class="tab-button active" data-tab="detailed-view" type="button">Detailed overview</button>
+            <button class="tab-button" data-tab="sleep-summary-view" type="button">Sleep summary</button>
+        </div>
+
+        <div id="detailed-view" class="tab-panel active">
+        
+        <div class="status" id="status">
+            Loading data...
+        </div>
+
+        <div style="margin-bottom:12px; display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap;">
+            <label for="view-length" style="font-size:0.92rem; color:#4b5563; font-weight:500;">View length</label>
+            <select id="view-length" style="padding:8px 12px; background:#ffffff; color:#111827; border:1px solid #d1d5db; border-radius:8px; font-size:0.92rem; font-weight:500; cursor:pointer; box-shadow:0 1px 3px rgba(15,23,42,0.04);">
+                <option value="5m">Past 5 minutes</option>
+                <option value="10m">Past 10 minutes</option>
+                <option value="1h">Past hour</option>
+                <option value="5h">Past 5 hours</option>
+                <option value="24h" selected>Past day</option>
+            </select>
+        </div>
+        
+        <div id="inference-stats" style="margin-bottom:18px; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:12px;">
+            <div class="info-box" style="grid-column:1/-1; text-align:left;">
+                <strong>Inference summary</strong>
+                <div style="margin-top:6px; line-height:1.5;">
+                    The model groups recent HR and SpO2 data into windows, extracts summary features, and predicts whether a window may indicate sleep apnea.
+                    Red markers indicate predicted events; green markers indicate normal windows.
+                </div>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:18px; margin-bottom:18px;">
+            <div class="chart-card">
+                <div class="chart-title">Prediction Timeline (Per-Minute)</div>
+                <div class="chart-container">
+                    <canvas id="predictionChart"></canvas>
+                </div>
+                <div style="margin-top:12px;">
+                    <div style="font-size:0.9rem; color:#4b5563; font-weight:600; margin-bottom:8px;">What the colors mean</div>
+                    <div class="legend-grid" id="detailed-color-legend"></div>
+                    <div style="margin-top:8px; font-size:0.88rem; color:#6b7280;">No highlight means the signal looked normal.</div>
+                </div>
+            </div>
+            
+            <div class="chart-card" style="display:flex; flex-direction:column;">
+                <div class="chart-title">Recent Events</div>
+                <div id="inference-table-container-sidebar" style="flex:1; overflow-y:auto; max-height:350px;">
+                    <table id="inference-table" style="width:100%; border-collapse:collapse; font-size:0.9em;">
+                        <thead>
+                            <tr style="text-align:left; border-bottom:1px solid #ddd; position:sticky; top:0; background:#fff;">
+                                <th style="padding:8px 6px; font-weight:600; color:#374151;">Time</th>
+                                <th style="padding:8px 6px; font-weight:600; color:#374151;">Event</th>
+                                <th style="padding:8px 6px; font-weight:600; color:#374151;">SpO2</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div id="inference-table-container" style="margin-bottom:18px; display:none;">
+            <div class="chart-card" style="padding:12px;">
+                <div class="chart-title">Recent Inference Events</div>
+                <div style="overflow:auto; max-height:220px;">
+                    <table id="inference-table-old" style="width:100%; border-collapse:collapse; font-size:0.9em;">
+                        <thead>
+                            <tr style="text-align:left; border-bottom:1px solid #ddd;">
+                                <th style="padding:6px">Time</th>
+                                <th style="padding:6px">Event</th>
+                                <th style="padding:6px">SpO2_Mean</th>
+                                <th style="padding:6px">SpO2_Min</th>
+                                <th style="padding:6px">HR_Std</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div id="error-container"></div>
+        
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-title">Heart Rate (BPM)</div>
+                <div class="chart-container">
+                    <canvas id="hrChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">SpO2 (%)</div>
+                <div class="chart-container">
+                    <canvas id="spo2Chart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-title">Flex Voltage (V)</div>
+                <div class="chart-container">
+                    <canvas id="flexChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            Data updates automatically every five seconds
+        </div>
+
+        </div>
+
+        <div id="sleep-summary-view" class="tab-panel">
+            <div id="sleep-risk-card" class="chart-card" style="margin-bottom:18px; padding:28px; color:#ffffff; border:none; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 55%, #60a5fa 130%); box-shadow: 0 18px 34px rgba(37, 99, 235, 0.22);">
+                <div style="display:grid; grid-template-columns: minmax(170px, 240px) 1fr; gap:24px; align-items:center;">
+                    <div style="text-align:center;">
+                        <div id="sleep-risk-badge" style="font-size:3.6rem; font-weight:900; line-height:1; margin-bottom:12px; letter-spacing:-0.04em;">--</div>
+                        <div id="sleep-risk-label" style="font-size:1.15rem; font-weight:800; margin-bottom:6px; color:#ffffff;">Analyzing...</div>
+                        <div id="sleep-risk-interpretation" style="font-size:0.9rem; color:rgba(255,255,255,0.9); line-height:1.45;">Based on detected events</div>
+                    </div>
+                    <div>
+                        <div id="sleep-risk-text" style="line-height:1.65; color:rgba(255,255,255,0.96); margin-bottom:16px; font-size:0.98rem;"></div>
+                        <div id="sleep-risk-metrics" style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:12px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card" style="margin-bottom:18px;">
+                <div class="chart-title" style="margin-bottom:16px;">Key Findings</div>
+                <div id="sleep-behavior-list" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:12px;"></div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:18px; margin-bottom:18px; align-items:start;">
+                <div class="chart-card">
+                    <div class="chart-title">Event Timeline Through the Night</div>
+                    <div class="chart-container">
+                        <canvas id="sleepPredictionChart"></canvas>
+                    </div>
+                    <div style="margin-top:12px; font-size:0.88rem; color:#6b7280;">Red indicates flagged windows • Green indicates normal windows</div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="chart-card" style="padding:16px; background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%); border:1px solid #bfdbfe;">
+                        <div class="chart-title" style="margin-bottom:12px; color:#1d4ed8;">Sleep Calendar</div>
+                        <div id="sleep-calendar" style="display:grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap:8px;"></div>
+                    </div>
+
+                    <div class="chart-card" style="display:flex; flex-direction:column; padding:16px;">
+                        <div class="chart-title">Events Detected</div>
+                        <div id="sleep-event-list" style="flex:1; overflow-y:auto; max-height:320px; display:grid; gap:8px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px; margin-bottom:18px;">
+                <div class="chart-card" style="background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border:1px solid #fcd34d;">
+                    <div class="chart-title" style="color:#92400e;">Things to Watch</div>
+                    <ul id="sleep-watch-list" style="list-style:none; padding:0; margin:0; display:grid; gap:10px;"></ul>
+                </div>
+
+                <div class="chart-card" style="background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%); border:1px solid #86efac;">
+                    <div class="chart-title" style="color:#166534;">Next Steps</div>
+                    <ul id="sleep-recommendations" style="list-style:none; padding:0; margin:0; display:grid; gap:10px;"></ul>
+                </div>
+            </div>
+
+            <div class="info-box" style="background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8;">
+                <strong>📋 Important:</strong> This screening tool provides insights based on sleep signal analysis. It is <strong>not a medical diagnosis</strong>. If you have concerns about your sleep health, consult with a healthcare provider.
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let hrChart, spo2Chart, flexChart, predictionChart;
+        const API_URL = '/php_files/get_vitals.php';
+        const INF_API = '/php_files/get_inference.php';
+        const REFRESH_INTERVAL = 5000; // 5 seconds
+        const INFERENCE_WINDOW_SECONDS = 30;
+        const INFERENCE_STRIDE_SECONDS = 15;
+
+        const eventShadingPlugin = {
+            id: 'eventShading',
+            beforeDatasetsDraw(chart, args, pluginOptions) {
+                const spans = pluginOptions && Array.isArray(pluginOptions.spans) ? pluginOptions.spans : [];
+                if (!spans.length || !chart.scales || !chart.scales.x) {
+                    return;
+                }
+
+                const { ctx, chartArea, scales } = chart;
+                const xScale = scales.x;
+
+                ctx.save();
+                spans.forEach((span) => {
+                    const startPixel = xScale.getPixelForValue(span.startIndex);
+                    const endPixel = xScale.getPixelForValue(span.endIndex);
+                    const left = Math.max(chartArea.left, Math.min(startPixel, endPixel));
+                    const right = Math.min(chartArea.right, Math.max(startPixel, endPixel) + 1);
+
+                    if (right <= left) {
+                        return;
+                    }
+
+                    ctx.fillStyle = span.color || 'rgba(231, 76, 60, 0.12)';
+                    ctx.fillRect(left, chartArea.top, right - left, chartArea.bottom - chartArea.top);
+                });
+                ctx.restore();
+            },
+            afterEvent(chart, args, pluginOptions) {
+                const spans = pluginOptions && Array.isArray(pluginOptions.spans) ? pluginOptions.spans : [];
+                const tooltip = ensureChartTooltip(chart);
+                if (!spans.length || !chart.scales || !chart.scales.x || !tooltip) {
+                    hideChartTooltip(chart);
+                    return;
+                }
+
+                const event = args.event;
+                if (!event || typeof event.x !== 'number' || typeof event.y !== 'number') {
+                    hideChartTooltip(chart);
+                    return;
+                }
+
+                const xScale = chart.scales.x;
+                const chartArea = chart.chartArea;
+                if (event.x < chartArea.left || event.x > chartArea.right || event.y < chartArea.top || event.y > chartArea.bottom) {
+                    hideChartTooltip(chart);
+                    return;
+                }
+
+                const hoveredIndex = Math.round(Number(xScale.getValueForPixel(event.x)));
+                const hoveredSpan = spans.find(span => hoveredIndex >= span.startIndex && hoveredIndex <= span.endIndex);
+
+                if (!hoveredSpan) {
+                    hideChartTooltip(chart);
+                    return;
+                }
+
+                tooltip.innerHTML = `
+                    <strong>${hoveredSpan.label || 'Event'}</strong>
+                    ${hoveredSpan.tooltipText || hoveredSpan.reason || 'Important event'}
+                `;
+                tooltip.style.left = `${event.x + 14}px`;
+                tooltip.style.top = `${event.y + 14}px`;
+                tooltip.style.display = 'block';
+                chart.canvas.style.cursor = 'pointer';
+            }
+        };
+
+        Chart.register(eventShadingPlugin);
+
+        function ensureChartTooltip(chart) {
+            if (!chart || !chart.canvas || !chart.canvas.parentNode) {
+                return null;
+            }
+
+            if (chart.$hoverTooltip) {
+                return chart.$hoverTooltip;
+            }
+
+            const parent = chart.canvas.parentNode;
+            if (getComputedStyle(parent).position === 'static') {
+                parent.style.position = 'relative';
+            }
+
+            const tooltip = document.createElement('div');
+            tooltip.className = 'chart-tooltip';
+            parent.appendChild(tooltip);
+            chart.$hoverTooltip = tooltip;
+            return tooltip;
+        }
+
+        function hideChartTooltip(chart) {
+            if (!chart) {
+                return;
+            }
+
+            if (chart.$hoverTooltip) {
+                chart.$hoverTooltip.style.display = 'none';
+            }
+            if (chart.canvas) {
+                chart.canvas.style.cursor = 'default';
+            }
+        }
+
+        function findIndexAtOrAfter(timestamps, targetTime) {
+            const target = new Date(targetTime).getTime();
+            for (let i = 0; i < timestamps.length; i++) {
+                if (new Date(timestamps[i]).getTime() >= target) {
+                    return i;
+                }
+            }
+            return timestamps.length > 0 ? timestamps.length - 1 : 0;
+        }
+
+        function findIndexAtOrBefore(timestamps, targetTime) {
+            const target = new Date(targetTime).getTime();
+            for (let i = timestamps.length - 1; i >= 0; i--) {
+                if (new Date(timestamps[i]).getTime() <= target) {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
+        function getEventMeta(reasonText, eventType) {
+            const reason = (reasonText || '').toLowerCase();
+            const kind = (eventType || '').toLowerCase();
+
+            if (reason.includes('breath hold') || kind === 'breath_hold') {
+                return {
+                    category: 'breath_hold',
+                    label: 'Breathing pause',
+                    color: 'rgba(220, 38, 38, 0.16)',
+                    weight: 14,
+                };
+            }
+
+            if (reason.includes('rapid breathing') || kind === 'rapid_breathing') {
+                return {
+                    category: 'rapid_breathing',
+                    label: 'Rapid breathing',
+                    color: 'rgba(20, 184, 166, 0.16)',
+                    weight: 9,
+                };
+            }
+
+            if (reason.includes('low flex') || kind === 'underexerted') {
+                return {
+                    category: 'shallow_breathing',
+                    label: 'Shallow breathing',
+                    color: 'rgba(168, 85, 247, 0.16)',
+                    weight: 7,
+                };
+            }
+
+            if (reason.includes('high flex') || kind === 'overexerted') {
+                return {
+                    category: 'breathing_strain',
+                    label: 'Breathing strain',
+                    color: 'rgba(249, 115, 22, 0.16)',
+                    weight: 7,
+                };
+            }
+
+            if (reason.includes('extreme heart') || reason.includes('sudden heart')) {
+                return {
+                    category: 'heart_change',
+                    label: 'Heart rate change',
+                    color: 'rgba(37, 99, 235, 0.16)',
+                    weight: 8,
+                };
+            }
+
+            if (reason.includes('extreme oxygen') || reason.includes('sudden spo2')) {
+                return {
+                    category: 'oxygen_drop',
+                    label: 'Oxygen drop',
+                    color: 'rgba(14, 165, 233, 0.16)',
+                    weight: 8,
+                };
+            }
+
+            if (reason.includes('model apnea prediction') || kind === 'model_event') {
+                return {
+                    category: 'possible_apnea',
+                    label: 'Possible apnea event',
+                    color: 'rgba(220, 38, 38, 0.12)',
+                    weight: 10,
+                };
+            }
+
+            return {
+                category: 'other_event',
+                label: 'Important event',
+                color: 'rgba(100, 116, 139, 0.12)',
+                weight: 5,
+            };
+        }
+
+        function buildEventSpans(inf, timestamps) {
+            const spans = [];
+            const totalWindows = Math.min(
+                inf && inf.start_ts ? inf.start_ts.length : 0,
+                inf && inf.end_ts ? inf.end_ts.length : 0,
+                inf && inf.event_flag ? inf.event_flag.length : 0
+            );
+
+            for (let i = 0; i < totalWindows; i++) {
+                const isEvent = Number(inf.event_flag[i] ?? inf.pred[i]) === 1;
+                if (!isEvent) {
+                    continue;
+                }
+
+                const startIndex = findIndexAtOrAfter(timestamps, inf.start_ts[i]);
+                const endIndex = findIndexAtOrBefore(timestamps, inf.end_ts[i]);
+                if (endIndex < startIndex) {
+                    continue;
+                }
+
+                const meta = getEventMeta(inf.event_reason && inf.event_reason[i], inf.event_type && inf.event_type[i]);
+                const reason = inf.event_reason && inf.event_reason[i] ? inf.event_reason[i] : meta.label;
+
+                spans.push({
+                    startIndex,
+                    endIndex,
+                    color: meta.color,
+                    category: meta.category,
+                    label: meta.label,
+                    reason,
+                    tooltipText: `${meta.label}\n${reason}`,
+                    weight: meta.weight
+                });
+            }
+
+            spans.sort((a, b) => a.startIndex - b.startIndex || a.endIndex - b.endIndex);
+            const merged = [];
+            for (const span of spans) {
+                const last = merged[merged.length - 1];
+                if (last && span.startIndex <= last.endIndex + 1 && span.category === last.category) {
+                    last.endIndex = Math.max(last.endIndex, span.endIndex);
+                    continue;
+                }
+                merged.push({ ...span });
+            }
+            return merged;
+        }
+
+        function renderColorLegend(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) {
+                return;
+            }
+
+            const items = [
+                { bg: 'rgba(220, 38, 38, 0.12)', border: 'rgba(220, 38, 38, 0.28)', label: 'Breathing pause', description: 'Sustained low flex activity across consecutive windows.' },
+                { bg: 'rgba(20, 184, 166, 0.12)', border: 'rgba(20, 184, 166, 0.28)', label: 'Rapid breathing', description: 'Frequent flex oscillations in a short time window.' },
+                { bg: 'rgba(168, 85, 247, 0.12)', border: 'rgba(168, 85, 247, 0.28)', label: 'Shallow breathing', description: 'Low motion and low flex activity.' },
+                { bg: 'rgba(249, 115, 22, 0.12)', border: 'rgba(249, 115, 22, 0.28)', label: 'Breathing strain', description: 'High flex motion that may suggest labored breathing.' },
+                { bg: 'rgba(37, 99, 235, 0.12)', border: 'rgba(37, 99, 235, 0.28)', label: 'Heart rate change', description: 'A notable change in heart rate over the window.' },
+                { bg: 'rgba(14, 165, 233, 0.12)', border: 'rgba(14, 165, 233, 0.28)', label: 'Oxygen drop', description: 'A notable drop in SpO2 over the window.' },
+            ];
+
+            container.innerHTML = items.map(item => `
+                <div class="legend-chip" style="background:${item.bg}; border-color:${item.border};">
+                    <span>
+                        <strong style="display:block; margin-bottom:2px;">${item.label}</strong>
+                        <span style="font-size:0.82rem; color:#4b5563; line-height:1.35;">${item.description}</span>
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function buildSleepSummary(inf, timestamps) {
+            const spans = buildEventSpans(inf, timestamps);
+            const summary = {
+                spans,
+                score: 100,
+                riskLabel: 'Low risk',
+                riskColor: '#166534',
+                riskText: 'Last night looked calm overall.',
+                counts: {
+                    breath_hold: 0,
+                    rapid_breathing: 0,
+                    shallow_breathing: 0,
+                    breathing_strain: 0,
+                    heart_change: 0,
+                    oxygen_drop: 0,
+                    possible_apnea: 0,
+                },
+                lines: [],
+            };
+
+            const textFor = (span) => `${(span.reason || '').toLowerCase()} ${span.category || ''}`;
+            let deduction = 0;
+
+            spans.forEach(span => {
+                const reasonText = textFor(span);
+                const durationMinutes = Math.max(1, span.endIndex - span.startIndex + 1);
+                deduction += span.weight || 5;
+                deduction += Math.min(5, Math.ceil(durationMinutes / 4));
+
+                if (reasonText.includes('breath hold')) summary.counts.breath_hold += 1;
+                if (reasonText.includes('rapid breathing')) summary.counts.rapid_breathing += 1;
+                if (reasonText.includes('low flex')) summary.counts.shallow_breathing += 1;
+                if (reasonText.includes('high flex')) summary.counts.breathing_strain += 1;
+                if (reasonText.includes('heart')) summary.counts.heart_change += 1;
+                if (reasonText.includes('spo2') || reasonText.includes('oxygen')) summary.counts.oxygen_drop += 1;
+                if (reasonText.includes('model apnea prediction')) summary.counts.possible_apnea += 1;
+            });
+
+            summary.score = Math.max(0, 100 - deduction);
+            if (summary.score >= 80) {
+                summary.riskLabel = 'Low risk';
+                summary.riskColor = '#166534';
+                summary.riskText = 'The night looked mostly stable. There were only a few minor signals to watch.';
+            } else if (summary.score >= 60) {
+                summary.riskLabel = 'Possible risk';
+                summary.riskColor = '#92400e';
+                summary.riskText = 'There were several noticeable events. Keep an eye on this pattern over a few nights.';
+            } else if (summary.score >= 40) {
+                summary.riskLabel = 'Moderate risk';
+                summary.riskColor = '#c2410c';
+                summary.riskText = 'The signals show repeated breathing and vital changes that may deserve attention.';
+            } else {
+                summary.riskLabel = 'High risk';
+                summary.riskColor = '#991b1b';
+                summary.riskText = 'The night showed frequent and stronger events. This should be reviewed with a clinician.';
+            }
+
+            const lines = [];
+            if (summary.counts.breath_hold > 0) {
+                lines.push(`You stopped breathing ${summary.counts.breath_hold} time${summary.counts.breath_hold === 1 ? '' : 's'} last night.`);
+            }
+            if (summary.counts.rapid_breathing > 0) {
+                lines.push(`Rapid breathing showed up ${summary.counts.rapid_breathing} time${summary.counts.rapid_breathing === 1 ? '' : 's'} last night.`);
+            }
+            if (summary.counts.shallow_breathing > 0) {
+                lines.push(`Your breathing looked shallow ${summary.counts.shallow_breathing} time${summary.counts.shallow_breathing === 1 ? '' : 's'} last night.`);
+            }
+            if (summary.counts.breathing_strain > 0) {
+                lines.push(`Your breathing looked strained ${summary.counts.breathing_strain} time${summary.counts.breathing_strain === 1 ? '' : 's'} last night.`);
+            }
+            if (summary.counts.heart_change > 0) {
+                lines.push(`Your heart rate changed significantly ${summary.counts.heart_change} time${summary.counts.heart_change === 1 ? '' : 's'} last night.`);
+            }
+            if (summary.counts.oxygen_drop > 0) {
+                lines.push(`Your oxygen level dropped ${summary.counts.oxygen_drop} time${summary.counts.oxygen_drop === 1 ? '' : 's'} last night.`);
+            }
+            if (!lines.length) {
+                lines.push('No important overnight events were detected.');
+            }
+
+            summary.lines = lines;
+            return summary;
+        }
+
+        function getLocalDateKey(dateValue) {
+            const date = new Date(dateValue);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function getPerformanceTone(score) {
+            if (score >= 80) {
+                return {
+                    label: 'Good',
+                    bg: 'linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, rgba(16, 185, 129, 0.08) 100%)',
+                    border: 'rgba(34, 197, 94, 0.32)',
+                    fg: '#166534',
+                };
+            }
+            if (score >= 60) {
+                return {
+                    label: 'Watch',
+                    bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(251, 191, 36, 0.08) 100%)',
+                    border: 'rgba(245, 158, 11, 0.32)',
+                    fg: '#92400e',
+                };
+            }
+            if (score >= 40) {
+                return {
+                    label: 'Concern',
+                    bg: 'linear-gradient(135deg, rgba(249, 115, 22, 0.18) 0%, rgba(251, 146, 60, 0.08) 100%)',
+                    border: 'rgba(249, 115, 22, 0.32)',
+                    fg: '#c2410c',
+                };
+            }
+            return {
+                label: 'High',
+                bg: 'linear-gradient(135deg, rgba(220, 38, 38, 0.18) 0%, rgba(248, 113, 113, 0.08) 100%)',
+                border: 'rgba(220, 38, 38, 0.32)',
+                fg: '#991b1b',
+            };
+        }
+
+        function buildSleepCalendarDays(historyInf, historyTimestamps) {
+            const timestamps = Array.isArray(historyTimestamps) ? historyTimestamps : [];
+            if (!timestamps.length) {
+                return [];
+            }
+
+            const spans = buildEventSpans(historyInf || {}, timestamps);
+            const dailyStats = new Map();
+
+            spans.forEach(span => {
+                const dayKey = getLocalDateKey(timestamps[Math.max(0, span.startIndex)]);
+                const stats = dailyStats.get(dayKey) || { events: 0, severity: 0 };
+                stats.events += 1;
+                stats.severity += span.weight || 5;
+                dailyStats.set(dayKey, stats);
+            });
+
+            const lastDate = new Date(timestamps[timestamps.length - 1]);
+            lastDate.setHours(0, 0, 0, 0);
+
+            const calendarDays = [];
+            for (let offset = 6; offset >= 0; offset--) {
+                const date = new Date(lastDate);
+                date.setDate(lastDate.getDate() - offset);
+                const key = getLocalDateKey(date);
+                const stats = dailyStats.get(key) || { events: 0, severity: 0 };
+                const penalty = (stats.events * 8) + (stats.severity * 1.6);
+                const score = Math.max(0, Math.min(100, Math.round(100 - penalty)));
+                const tone = getPerformanceTone(score);
+
+                calendarDays.push({
+                    label: date.toLocaleDateString('en-US', { weekday: 'short' }),
+                    day: date.getDate(),
+                    score,
+                    tone,
+                    events: stats.events,
+                    isToday: offset === 0,
+                });
+            }
+
+            return calendarDays;
+        }
+
+        function renderSleepSummary(inf, timestamps, historyInf, historyTimestamps) {
+            const riskCardEl = document.getElementById('sleep-risk-card');
+            const behaviorEl = document.getElementById('sleep-behavior-list');
+            const eventListEl = document.getElementById('sleep-event-list');
+            const calendarEl = document.getElementById('sleep-calendar');
+            const riskBadgeEl = document.getElementById('sleep-risk-badge');
+            const riskLabelEl = document.getElementById('sleep-risk-label');
+            const riskInterpEl = document.getElementById('sleep-risk-interpretation');
+            const riskTextEl = document.getElementById('sleep-risk-text');
+            const riskMetricsEl = document.getElementById('sleep-risk-metrics');
+            const watchListEl = document.getElementById('sleep-watch-list');
+            const recommendEl = document.getElementById('sleep-recommendations');
+
+            const emptyCalendar = '<div style="grid-column:1/-1; padding:12px; background:rgba(255,255,255,0.75); border-radius:12px; color:#64748b; text-align:center; font-size:0.88rem;">No history yet</div>';
+
+            if (!inf || !inf.end_ts || inf.end_ts.length === 0) {
+                if (riskCardEl) {
+                    riskCardEl.style.background = 'linear-gradient(135deg, #475569 0%, #64748b 100%)';
+                }
+                riskBadgeEl.textContent = '?';
+                riskLabelEl.textContent = 'No data yet';
+                riskInterpEl.textContent = 'Waiting for overnight data';
+                riskTextEl.textContent = 'There is not enough overnight data yet to calculate a sleep summary.';
+                riskMetricsEl.innerHTML = emptyCalendar;
+                behaviorEl.innerHTML = '<div style="grid-column:1/-1; padding:16px; background:#f3f4f6; border-radius:12px; color:#6b7280; text-align:center;">No overnight data available</div>';
+                eventListEl.innerHTML = '<div style="padding:12px; color:#6b7280; font-size:0.9rem; text-align:center;">No events recorded</div>';
+                calendarEl.innerHTML = emptyCalendar;
+                watchListEl.innerHTML = '<li style="padding:12px; background:rgba(255,255,255,0.6); border-radius:10px; color:#92400e; line-height:1.45;"><strong>•</strong> Sleep summary will populate once overnight data arrives.</li>';
+                recommendEl.innerHTML = '<li style="padding:12px; background:rgba(255,255,255,0.6); border-radius:10px; color:#166534; line-height:1.45;"><strong>•</strong> Keep the sensor connected overnight for a fuller picture.</li>';
+                return;
+            }
+
+            const summary = buildSleepSummary(inf, timestamps);
+            const calendarDays = buildSleepCalendarDays(historyInf || inf, historyTimestamps || timestamps);
+
+            if (riskCardEl) {
+                riskCardEl.style.background = `linear-gradient(135deg, ${summary.riskColor} 0%, ${summary.riskColor}cc 100%)`;
+                riskCardEl.style.boxShadow = `0 18px 34px ${summary.riskColor}33`;
+            }
+
+            const riskEmojis = {
+                'Low risk': '✅',
+                'Possible risk': '⚠️',
+                'Moderate risk': '⚠️',
+                'High risk': '🔴',
+            };
+
+            riskBadgeEl.textContent = riskEmojis[summary.riskLabel] || '?';
+            riskLabelEl.textContent = summary.riskLabel;
+            riskLabelEl.style.color = '#ffffff';
+            riskInterpEl.textContent = {
+                'Low risk': 'Your sleep signals look stable',
+                'Possible risk': 'Some patterns are worth watching',
+                'Moderate risk': 'Several patterns deserve attention',
+                'High risk': 'Multiple concerning patterns were detected',
+            }[summary.riskLabel] || 'Analysis in progress';
+            riskTextEl.textContent = summary.riskText;
+
+            const durationHours = timestamps.length > 1
+                ? (new Date(timestamps[timestamps.length - 1]).getTime() - new Date(timestamps[0]).getTime()) / 3600000
+                : 0;
+
+            const eventTone = summary.spans.length >= 8
+                ? { bg: 'rgba(220, 38, 38, 0.14)', border: 'rgba(220, 38, 38, 0.3)', fg: '#991b1b' }
+                : summary.spans.length >= 4
+                    ? { bg: 'rgba(245, 158, 11, 0.14)', border: 'rgba(245, 158, 11, 0.3)', fg: '#92400e' }
+                    : { bg: 'rgba(34, 197, 94, 0.14)', border: 'rgba(34, 197, 94, 0.3)', fg: '#166534' };
+            const durationTone = durationHours >= 7
+                ? { bg: 'rgba(34, 197, 94, 0.14)', border: 'rgba(34, 197, 94, 0.3)', fg: '#166534' }
+                : durationHours >= 5
+                    ? { bg: 'rgba(245, 158, 11, 0.14)', border: 'rgba(245, 158, 11, 0.3)', fg: '#92400e' }
+                    : { bg: 'rgba(220, 38, 38, 0.14)', border: 'rgba(220, 38, 38, 0.3)', fg: '#991b1b' };
+            const rapidTone = summary.counts.rapid_breathing > 0
+                ? { bg: 'rgba(20, 184, 166, 0.14)', border: 'rgba(20, 184, 166, 0.3)', fg: '#0f766e' }
+                : { bg: 'rgba(37, 99, 235, 0.14)', border: 'rgba(37, 99, 235, 0.3)', fg: '#1d4ed8' };
+
+            riskMetricsEl.innerHTML = [
+                { label: 'Event load', value: summary.spans.length, tone: eventTone },
+                { label: 'Tracked duration', value: durationHours >= 1 ? `${durationHours.toFixed(1)}h` : `${Math.max(1, Math.round(durationHours * 60))}m`, tone: durationTone },
+                { label: 'Rapid breathing', value: summary.counts.rapid_breathing, tone: rapidTone },
+                { label: 'Breathing pauses', value: summary.counts.breath_hold, tone: summary.counts.breath_hold > 0 ? { bg: 'rgba(220, 38, 38, 0.14)', border: 'rgba(220, 38, 38, 0.3)', fg: '#991b1b' } : { bg: 'rgba(34, 197, 94, 0.14)', border: 'rgba(34, 197, 94, 0.3)', fg: '#166534' } },
+            ].map(item => `
+                <div style="background:${item.tone.bg}; border:1px solid ${item.tone.border}; border-radius:14px; padding:14px 12px; text-align:center; color:${item.tone.fg};">
+                    <div style="font-size:1.35rem; font-weight:800; line-height:1; margin-bottom:6px;">${item.value}</div>
+                    <div style="font-size:0.82rem; font-weight:700; letter-spacing:0.01em;">${item.label}</div>
+                </div>
+            `).join('');
+
+            const findingTiles = [];
+            if (summary.counts.breath_hold > 0) {
+                findingTiles.push({ icon: '⏸️', label: 'Breathing pauses', count: summary.counts.breath_hold, tone: { bg: 'rgba(220, 38, 38, 0.12)', border: 'rgba(220, 38, 38, 0.25)', fg: '#991b1b' }, text: 'Sustained low flex activity' });
+            }
+            if (summary.counts.rapid_breathing > 0) {
+                findingTiles.push({ icon: '🌬️', label: 'Rapid breathing', count: summary.counts.rapid_breathing, tone: { bg: 'rgba(20, 184, 166, 0.12)', border: 'rgba(20, 184, 166, 0.25)', fg: '#0f766e' }, text: 'Frequent oscillations in a short window' });
+            }
+            if (summary.counts.shallow_breathing > 0) {
+                findingTiles.push({ icon: '💨', label: 'Shallow breathing', count: summary.counts.shallow_breathing, tone: { bg: 'rgba(168, 85, 247, 0.12)', border: 'rgba(168, 85, 247, 0.25)', fg: '#7c3aed' }, text: 'Low motion and low flex activity' });
+            }
+            if (summary.counts.breathing_strain > 0) {
+                findingTiles.push({ icon: '😤', label: 'Breathing strain', count: summary.counts.breathing_strain, tone: { bg: 'rgba(249, 115, 22, 0.12)', border: 'rgba(249, 115, 22, 0.25)', fg: '#c2410c' }, text: 'High flex motion during the window' });
+            }
+            if (summary.counts.heart_change > 0) {
+                findingTiles.push({ icon: '❤️', label: 'Heart rate changes', count: summary.counts.heart_change, tone: { bg: 'rgba(37, 99, 235, 0.12)', border: 'rgba(37, 99, 235, 0.25)', fg: '#1d4ed8' }, text: 'Notable heart rate movement' });
+            }
+            if (summary.counts.oxygen_drop > 0) {
+                findingTiles.push({ icon: '📉', label: 'Oxygen drops', count: summary.counts.oxygen_drop, tone: { bg: 'rgba(14, 165, 233, 0.12)', border: 'rgba(14, 165, 233, 0.25)', fg: '#0369a1' }, text: 'SpO2 dipped below normal range' });
+            }
+            if (!findingTiles.length) {
+                findingTiles.push({ icon: '✨', label: 'Stable night', count: 0, tone: { bg: 'rgba(34, 197, 94, 0.12)', border: 'rgba(34, 197, 94, 0.25)', fg: '#166534' }, text: 'No notable overnight events detected' });
+            }
+
+            behaviorEl.innerHTML = findingTiles.map(tile => `
+                <div style="padding:14px; background:${tile.tone.bg}; border:1px solid ${tile.tone.border}; border-radius:14px; color:${tile.tone.fg}; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);">
+                    <div style="font-size:1.4rem; margin-bottom:8px;">${tile.icon}</div>
+                    <div style="font-size:0.98rem; font-weight:800; margin-bottom:4px;">${tile.label}</div>
+                    <div style="font-size:1.5rem; font-weight:900; line-height:1; margin-bottom:8px;">${tile.count}</div>
+                    <div style="font-size:0.84rem; line-height:1.45; color:inherit; opacity:0.9;">${tile.text}</div>
+                </div>
+            `).join('');
+
+            eventListEl.innerHTML = summary.spans.length > 0
+                ? summary.spans.slice(0, 10).map((span) => {
+                    const startTime = new Date(timestamps[Math.max(0, span.startIndex)]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    const endTime = new Date(timestamps[Math.min(timestamps.length - 1, span.endIndex)]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    return `
+                        <div style="padding:12px 12px 12px 14px; background:${span.color.replace('0.16)', '0.09)')}; border:1px solid ${span.color.replace('0.16)', '0.25)')}; border-radius:12px; font-size:0.88rem;">
+                            <div style="font-weight:800; color:#111827; margin-bottom:3px;">${span.label}</div>
+                            <div style="color:#6b7280; margin-bottom:4px;">${startTime}–${endTime}</div>
+                            <div style="font-size:0.8rem; color:#4b5563;">${span.reason}</div>
+                        </div>
+                    `;
+                }).join('')
+                : '<div style="padding:16px; text-align:center; color:#9ca3af; font-size:0.9rem;">No events recorded overnight</div>';
+
+            calendarEl.innerHTML = calendarDays.length > 0
+                ? calendarDays.map(day => `
+                    <div style="padding:10px 8px; border-radius:14px; background:${day.tone.bg}; border:1px solid ${day.tone.border}; color:${day.tone.fg}; min-height:86px; display:flex; flex-direction:column; justify-content:space-between; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45); ${day.isToday ? 'outline:2px solid rgba(29, 78, 216, 0.22);' : ''}">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                            <div style="font-size:0.75rem; font-weight:800; letter-spacing:0.04em; text-transform:uppercase;">${day.label}</div>
+                            <div style="font-size:0.75rem; font-weight:700; opacity:0.82;">${day.isToday ? 'Today' : ''}</div>
+                        </div>
+                        <div style="font-size:1.3rem; font-weight:900; line-height:1;">${day.day}</div>
+                        <div style="font-size:0.78rem; line-height:1.3; font-weight:700; opacity:0.95;">${day.score >= 80 ? 'Good sleep' : day.score >= 60 ? 'Watch trend' : day.score >= 40 ? 'Concern' : 'High risk'}</div>
+                        <div style="font-size:0.72rem; opacity:0.9;">${day.events} event${day.events === 1 ? '' : 's'}</div>
+                    </div>
+                `).join('')
+                : emptyCalendar;
+
+            const patterns = [];
+            if (summary.counts.breath_hold >= 2) patterns.push('Breathing pauses clustered overnight');
+            if (summary.counts.rapid_breathing >= 2) patterns.push('Repeated rapid breathing windows');
+            if (summary.counts.shallow_breathing >= 2) patterns.push('Recurring shallow breathing episodes');
+            if (summary.counts.heart_change >= 3) patterns.push('Multiple heart rate fluctuations');
+            if (summary.counts.oxygen_drop >= 2) patterns.push('Oxygen saturation variations');
+            if (summary.spans.length > 5) patterns.push('Clustered events within a short timespan');
+
+            watchListEl.innerHTML = patterns.length > 0
+                ? patterns.map((p) => `
+                    <li style="padding:12px; background:rgba(255,255,255,0.72); border-radius:12px; font-size:0.92rem; color:#78350f; line-height:1.45; border:1px solid rgba(245, 158, 11, 0.22);">
+                        <strong>•</strong> ${p}
+                    </li>
+                `).join('')
+                : '<li style="padding:12px; background:rgba(255,255,255,0.72); border-radius:12px; font-size:0.92rem; color:#78350f; line-height:1.45; border:1px solid rgba(245, 158, 11, 0.22);"><strong>•</strong> No concerning patterns detected</li>';
+
+            const recommendations = [];
+            if (summary.riskLabel === 'Low risk') {
+                recommendations.push('Keep monitoring and maintain a consistent sleep schedule');
+                recommendations.push('Use the calendar to spot long-term trends');
+            } else if (summary.riskLabel === 'Possible risk') {
+                recommendations.push('Track events over multiple nights');
+                recommendations.push('Note any daytime symptoms such as fatigue or headaches');
+            } else {
+                recommendations.push('Consider sharing this summary with a sleep specialist');
+                recommendations.push('Track patterns and compare the calendar over time');
+            }
+
+            recommendEl.innerHTML = recommendations.map((r, idx) => `
+                <li style="padding:12px; background:rgba(255,255,255,0.72); border-radius:12px; font-size:0.92rem; color:#166534; line-height:1.45; border:1px solid rgba(34, 197, 94, 0.22);">
+                    <strong>${idx + 1}.</strong> ${r}
+                </li>
+            `).join('');
+
+            const sleepChartEl = document.getElementById('sleepPredictionChart');
+            if (sleepChartEl) {
+                const { minuteLabels, minutePreds } = binEventsToMinutes(inf.start_ts || [], inf.end_ts || [], inf.pred || [], timestamps);
+                const colors = minutePreds.map(pred => pred === 1 ? '#dc2626' : '#15803d');
+
+                if (!window.sleepPredictionChartInstance) {
+                    window.sleepPredictionChartInstance = new Chart(sleepChartEl, {
+                        type: 'bar',
+                        data: {
+                            labels: minuteLabels,
+                            datasets: [{
+                                label: 'Analysis windows',
+                                data: minutePreds.map(p => p === 1 ? 1 : 0),
+                                backgroundColor: colors,
+                                borderColor: colors,
+                                borderRadius: 6,
+                                borderWidth: 0,
+                                barPercentage: 1,
+                                categoryPercentage: 1,
+                            }],
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            indexAxis: 'x',
+                            plugins: {
+                                legend: { display: false },
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 1,
+                                    display: false,
+                                },
+                                x: {
+                                    type: 'category',
+                                    ticks: {
+                                        font: { size: 10 },
+                                        callback: (idx) => typeof idx === 'number' && idx % Math.ceil(Math.max(minuteLabels.length, 1) / 6) === 0 ? minuteLabels[idx] : '',
+                                    },
+                                },
+                            },
+                        },
+                    });
+                } else {
+                    window.sleepPredictionChartInstance.data.labels = minuteLabels;
+                    window.sleepPredictionChartInstance.data.datasets[0].data = minutePreds.map(p => p === 1 ? 1 : 0);
+                    window.sleepPredictionChartInstance.data.datasets[0].backgroundColor = colors;
+                    window.sleepPredictionChartInstance.data.datasets[0].borderColor = colors;
+                    window.sleepPredictionChartInstance.update();
+                }
+            }
+        }
+
+        function setActiveTab(tabId) {
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.toggle('active', button.dataset.tab === tabId);
+            });
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.toggle('active', panel.id === tabId);
+            });
+        }
+
+        function binEventsToMinutes(startTimestamps, endTimestamps, flags, allTimestamps) {
+            if (!allTimestamps || allTimestamps.length === 0) {
+                return { minuteLabels: [], minutePreds: [] };
+            }
+
+            const firstTime = new Date(allTimestamps[0]).getTime();
+            const lastTime = new Date(allTimestamps[allTimestamps.length - 1]).getTime();
+            const minuteIndex = [];
+            for (let t = firstTime; t <= lastTime; t += 60000) {
+                minuteIndex.push(new Date(t));
+            }
+
+            const minutePreds = new Array(minuteIndex.length).fill(0);
+            for (let i = 0; i < Math.min(startTimestamps.length, endTimestamps.length, flags.length); i++) {
+                if (Number(flags[i]) !== 1) {
+                    continue;
+                }
+
+                const startTime = new Date(startTimestamps[i]).getTime();
+                const endTime = new Date(endTimestamps[i]).getTime();
+                for (let j = 0; j < minuteIndex.length; j++) {
+                    const minuteTime = minuteIndex[j].getTime();
+                    if (minuteTime >= startTime && minuteTime <= endTime) {
+                        minutePreds[j] = 1;
+                    }
+                }
+            }
+
+            const minuteLabels = minuteIndex.map(d => d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+            return { minuteLabels, minutePreds };
+        }
+        
+        // Initialize charts
+        function initializeCharts() {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        ticks: {
+                            maxTicksLimit: 8
+                        }
+                    }
+                }
+            };
+            
+            // Prediction Timeline Chart (minute-level)
+            predictionChart = new Chart(document.getElementById('predictionChart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Prediction',
+                        data: [],
+                        borderColor: '#9333ea',
+                        backgroundColor: 'rgba(147, 51, 234, 0.15)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0,
+                        pointRadius: 0,
+                        stepped: true
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    plugins: {
+                        ...chartOptions.plugins,
+                        eventShading: { spans: [] }
+                    },
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                            beginAtZero: true,
+                            max: 1,
+                            ticks: {
+                                stepSize: 1,
+                                callback: (v) => v === 1 ? 'Event' : 'Normal'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Heart Rate Chart
+            hrChart = new Chart(document.getElementById('hrChart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Heart Rate (BPM)',
+                        data: [],
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: '#e74c3c'
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    plugins: {
+                        ...chartOptions.plugins,
+                        eventShading: { spans: [] }
+                    },
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            // Add prediction overlay dataset (points only)
+            hrChart.data.datasets.push({
+                label: 'Inference',
+                data: [],
+                borderColor: '#000000',
+                backgroundColor: [],
+                pointRadius: 9,
+                pointHoverRadius: 12,
+                pointBorderWidth: 2,
+                pointBorderColor: '#111111',
+                showLine: false
+            });
+            
+            // SpO2 Chart
+            spo2Chart = new Chart(document.getElementById('spo2Chart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'SpO2 (%)',
+                        data: [],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: '#3498db'
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    plugins: {
+                        ...chartOptions.plugins,
+                        eventShading: { spans: [] }
+                    },
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                            beginAtZero: false,
+                            min: 90,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // Flex Voltage Chart
+            flexChart = new Chart(document.getElementById('flexChart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Flex Voltage (V)',
+                        data: [],
+                        borderColor: '#f39c12',
+                        backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: '#f39c12'
+                    }]
+                },
+                options: {
+                    ...chartOptions,
+                    plugins: {
+                        ...chartOptions.plugins,
+                        eventShading: { spans: [] }
+                    }
+                }
+            });
+        }
+
+        function computeDataRange(data) {
+            if (!data || data.length === 0) return { min: 0, max: 100 };
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const pad = (max - min) * 0.1 || 10;
+            return { min: Math.max(0, min - pad), max: max + pad };
+        }
+
+        function getSelectedViewLength() {
+            return document.getElementById('view-length').value;
+        }
+
+        function getRangeQueryParams(viewLength) {
+            if (viewLength === '5m') return 'minutes=5';
+            if (viewLength === '10m') return 'minutes=10';
+            if (viewLength === '1h') return 'hours=1';
+            if (viewLength === '5h') return 'hours=5';
+            return 'hours=24';
+        }
+
+        function clearDashboardView() {
+            predictionChart.data.labels = [];
+            predictionChart.data.datasets[0].data = [];
+            predictionChart.options.plugins.eventShading.spans = [];
+            predictionChart.update('none');
+            
+            hrChart.data.labels = [];
+            hrChart.data.datasets[0].data = [];
+            hrChart.data.datasets[1].data = [];
+            hrChart.data.datasets[1].backgroundColor = [];
+            hrChart.options.plugins.eventShading.spans = [];
+            hrChart.update('none');
+
+            spo2Chart.data.labels = [];
+            spo2Chart.data.datasets[0].data = [];
+            spo2Chart.options.plugins.eventShading.spans = [];
+            spo2Chart.update('none');
+
+            flexChart.data.labels = [];
+            flexChart.data.datasets[0].data = [];
+            flexChart.options.plugins.eventShading.spans = [];
+            flexChart.update('none');
+
+            document.getElementById('inference-stats').innerHTML = '<div class="info-box" style="grid-column:1/-1; text-align:left;">Refreshing data...</div>';
+            document.querySelector('#inference-table tbody').innerHTML = '';
+            document.getElementById('error-container').innerHTML = '';
+        }
+
+        function fetchSleepSummary() {
+            Promise.all([
+                fetch(API_URL + '?hours=24').then(r => r.json()),
+                fetch(INF_API + '?hours=24').then(r => r.json()),
+                fetch(API_URL + '?hours=168').then(r => r.json()),
+                fetch(INF_API + '?hours=168').then(r => r.json())
+            ])
+                .then(([data, inf, historyData, historyInf]) => {
+                    if (data.error || inf.error || historyData.error || historyInf.error) {
+                        console.warn('Sleep summary error', data.error || inf.error || historyData.error || historyInf.error);
+                        return;
+                    }
+                    renderSleepSummary(inf, data.created_ats || [], historyInf, historyData.created_ats || []);
+                })
+                .catch(err => console.warn('Sleep summary fetch failed', err));
+        }
+
+        // Fetch and update data
+        function updateCharts(clearFirst = false) {
+            if (clearFirst) {
+                clearDashboardView();
+            }
+
+            const viewLength = getSelectedViewLength();
+            const rangeParams = getRangeQueryParams(viewLength);
+
+            fetch(API_URL + '?' + rangeParams)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+                    
+                    // Format timestamps for display
+                    const labels = data.created_ats.map(ts => {
+                        const date = new Date(ts);
+                        return date.toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+                    });
+                    
+                    // Update HR Chart
+                    hrChart.data.labels = labels;
+                    hrChart.data.datasets[0].data = data.hr;
+                    const hrRange = computeDataRange(data.hr);
+                    hrChart.options.scales.y.min = hrRange.min;
+                    hrChart.options.scales.y.max = hrRange.max;
+                    // reset inference dataset arrays (filled after inference fetch)
+                    hrChart.data.datasets[1].data = new Array(labels.length).fill(null);
+                    hrChart.data.datasets[1].backgroundColor = new Array(labels.length).fill('rgba(0,0,0,0)');
+                    hrChart.update('none');
+                    
+                    // Update SpO2 Chart
+                    spo2Chart.data.labels = labels;
+                    spo2Chart.data.datasets[0].data = data.spo2;
+                    const spo2Range = computeDataRange(data.spo2);
+                    spo2Chart.options.scales.y.min = spo2Range.min;
+                    spo2Chart.options.scales.y.max = spo2Range.max;
+                    spo2Chart.update('none');
+                    
+                    // Update Flex Chart
+                    flexChart.data.labels = labels;
+                    flexChart.data.datasets[0].data = data.flex_voltage;
+                    const flexRange = computeDataRange(data.flex_voltage);
+                    flexChart.options.scales.y.min = flexRange.min;
+                    flexChart.options.scales.y.max = flexRange.max;
+                    flexChart.update('none');
+
+                    // After updating raw charts, fetch inference and overlay markers
+                    fetch(INF_API + '?' + rangeParams)
+                        .then(r => r.json())
+                        .then(inf => {
+                            if (inf.error) {
+                                console.warn('Inference error', inf);
+                                return;
+                            }
+
+                            const eventSpans = buildEventSpans(inf, data.created_ats);
+                            hrChart.options.plugins.eventShading.spans = eventSpans;
+                            spo2Chart.options.plugins.eventShading.spans = eventSpans;
+                            flexChart.options.plugins.eventShading.spans = eventSpans;
+
+                            // Bin event windows into per-minute buckets
+                            const { minuteLabels, minutePreds } = binEventsToMinutes(
+                                inf.start_ts || [],
+                                inf.end_ts || [],
+                                inf.event_flag || inf.pred || [],
+                                data.created_ats
+                            );
+                            
+                            // Update prediction timeline chart
+                            predictionChart.data.labels = minuteLabels;
+                            predictionChart.data.datasets[0].data = minutePreds;
+                            predictionChart.options.plugins.eventShading.spans = eventSpans;
+                            predictionChart.update('none');
+
+                            // Map inference window indices directly onto the HR series (for backward compatibility)
+                            const predDataset = hrChart.data.datasets[1];
+
+                            // Clear existing
+                            predDataset.data = new Array(labels.length).fill(null);
+                            predDataset.backgroundColor = new Array(labels.length).fill('rgba(0,0,0,0)');
+
+                            for (let i = 0; i < (inf.end_ts || []).length; i++) {
+                                const eventFlag = Number(inf.event_flag && inf.event_flag[i] !== undefined ? inf.event_flag[i] : inf.pred[i]);
+                                const idx = Number(inf.window_end_idx[i]);
+                                if (!Number.isNaN(idx) && idx >= 0 && idx < data.hr.length) {
+                                    // place marker at the HR value at the end of each inference window
+                                    predDataset.data[idx] = data.hr[idx];
+                                    predDataset.backgroundColor[idx] = eventFlag == 1 ? 'rgba(231,76,60,0.95)' : 'rgba(46,204,113,0.95)';
+                                }
+                            }
+
+                            hrChart.update('none');
+                            // Render inference stats and table
+                            renderInference(inf, labels, data.hr, data.created_ats);
+                        })
+                        .catch(err => console.warn('Inference fetch failed', err));
+
+                    fetchSleepSummary();
+                    
+                    updateStatus(data.created_ats.length);
+                    clearError();
+                })
+                .catch(error => {
+                    showError('Failed to fetch data: ' + error.message);
+                });
+        }
+        
+        function updateStatus(dataPoints) {
+            const now = new Date();
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = `Last updated: ${now.toLocaleTimeString()} | Data points: ${dataPoints}`;
+            statusEl.classList.remove('loading');
+        }
+        
+        function showError(message) {
+            const errorContainer = document.getElementById('error-container');
+            errorContainer.innerHTML = `<div class="error">Warning: ${message}</div>`;
+        }
+        
+        function clearError() {
+            document.getElementById('error-container').innerHTML = '';
+        }
+
+        function renderInference(inf, labels, hrData, timestamps) {
+            // inf: { end_ts: [...], pred: [...], event_flag: [...], event_reason: [...], ... }
+            const statsEl = document.getElementById('inference-stats');
+            const tbody = document.querySelector('#inference-table tbody');
+            statsEl.innerHTML = '';
+            tbody.innerHTML = '';
+
+            if (!inf || !inf.end_ts || inf.end_ts.length === 0) {
+                statsEl.innerHTML += '<div class="info-box">No inference results available yet. The dashboard needs at least some recent vitals rows to evaluate.</div>';
+                return;
+            }
+
+            const eventSpans = buildEventSpans(inf, timestamps || inf.end_ts || []);
+            const total = inf.end_ts.length;
+            const eventFlags = inf.event_flag || inf.pred || [];
+            const events = eventSpans.length;
+            const lastEventIdx = eventSpans.length - 1;
+            const lastEventTime = lastEventIdx >= 0 ? inf.end_ts[Math.min(inf.end_ts.length - 1, eventSpans[lastEventIdx].endIndex)] : null;
+            const percent = ((events / total) * 100).toFixed(1);
+
+            // Stats cards
+            const cards = [
+                {title: 'Windows analyzed', value: total},
+                {title: 'Important events', value: events},
+                {title: 'Event %', value: percent + '%'},
+                {title: 'Last important event', value: lastEventTime ? new Date(lastEventTime).toLocaleString() : 'N/A'}
+            ];
+
+            cards.forEach(c => {
+                const el = document.createElement('div');
+                el.className = 'info-box';
+                el.innerHTML = `<strong>${c.value}</strong><div style="opacity:0.8; margin-top:6px">${c.title}</div>`;
+                statsEl.appendChild(el);
+            });
+
+            // Register event spans on HR and SpO2 charts
+            if (hrChart && hrChart.options && hrChart.options.plugins) {
+                hrChart.options.plugins.eventShading.spans = eventSpans;
+                hrChart.update('none');
+            }
+            if (spo2Chart && spo2Chart.options && spo2Chart.options.plugins) {
+                spo2Chart.options.plugins.eventShading.spans = eventSpans;
+                spo2Chart.update('none');
+            }
+            if (flexChart && flexChart.options && flexChart.options.plugins) {
+                flexChart.options.plugins.eventShading.spans = eventSpans;
+                flexChart.update('none');
+            }
+
+            // Populate sidebar table with recent events (show most recent first, limit to 20)
+            let count = 0;
+            for (let i = inf.end_ts.length - 1; i >= 0 && count < 20; i--) {
+                if (Number(eventFlags[i]) === 1) {  // Only show flagged events
+                    const tr = document.createElement('tr');
+                    const meta = getEventMeta(inf.event_reason && inf.event_reason[i], inf.event_type && inf.event_type[i]);
+                    const timeStr = new Date(inf.end_ts[i]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    tr.innerHTML = `
+                        <td style="padding:8px 6px; border-bottom:1px solid #e5e7eb; font-size:0.9rem;">${timeStr}</td>
+                        <td style="padding:8px 6px; border-bottom:1px solid #e5e7eb; font-size:0.9rem;"><strong style="color:${meta.color.replace('0.16)', '1)')}; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">${meta.label}</strong></td>
+                        <td style="padding:8px 6px; border-bottom:1px solid #e5e7eb; font-size:0.9rem;">${inf.SpO2_Mean[i].toFixed(1)}%</td>
+                    `;
+                    tbody.appendChild(tr);
+                    count++;
+                }
+            }
+            
+            if (count === 0) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td colspan="3" style="padding:12px; text-align:center; color:#6b7280; font-size:0.9rem;">No events in recent window</td>`;
+                tbody.appendChild(tr);
+            }
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            initializeCharts();
+            renderColorLegend('detailed-color-legend');
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', () => setActiveTab(button.dataset.tab));
+            });
+            updateCharts();
+            
+            document.getElementById('view-length').addEventListener('change', () => {
+                updateCharts(true);
+            });
+            
+            setInterval(updateCharts, REFRESH_INTERVAL);
+        });
+    </script>
+</body>
+</html>

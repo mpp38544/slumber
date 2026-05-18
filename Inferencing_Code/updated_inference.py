@@ -454,10 +454,12 @@ def infer_from_db(
     num_records=1200,
     minutes=None,
     hours=None,
+    start_time=None,
+    end_time=None,
     model_path="apnea_rf_model.pkl",
     window_seconds=30,
     window_stride_seconds=15,
-    sensitivity_offset=0.25,
+    sensitivity_offset=0.08,
 ):
     """
     Run inference on database data in sliding time windows and return a pandas DataFrame.
@@ -467,7 +469,9 @@ def infer_from_db(
     """
     model = joblib.load(model_path)
 
-    if minutes is not None:
+    if start_time is not None and end_time is not None:
+        db_source = 'custom'
+    elif minutes is not None:
         db_source = 'minutes'
     elif hours is not None:
         db_source = 'hours'
@@ -477,6 +481,8 @@ def infer_from_db(
         num_records=num_records,
         minutes=minutes,
         hours=hours,
+        start_time=start_time,
+        end_time=end_time,
         include_flex=True,
     )
 
@@ -570,7 +576,13 @@ def infer_from_db(
             'HR_Std': float(np.std(seg_hr)),
         }
 
-        pred = int(model.predict(pd.DataFrame([feat]))[0])
+        feat_df = pd.DataFrame([feat])
+        pred_prob = None
+        if hasattr(model, 'predict_proba'):
+            pred_prob = float(model.predict_proba(feat_df)[0][1])
+            pred = 1 if pred_prob >= 0.85 else 0
+        else:
+            pred = int(model.predict(feat_df)[0])
         hr_mean = float(np.mean(seg_hr))
         hr_min = float(np.min(seg_hr))
         hr_max = float(np.max(seg_hr))
@@ -593,6 +605,7 @@ def infer_from_db(
             rapid_overlap = bool(((rapid_flex_alerts['status'] == 'rapid_breathing') & (rapid_flex_alerts['window_end_idx'] >= start_idx) & (rapid_flex_alerts['window_start_idx'] <= current_window_end_idx)).any())
 
         reasons = []
+        model_event_confident = pred == 1 and (pred_prob is None or pred_prob >= 0.9)
         if pred == 1:
             reasons.append('model apnea prediction')
 
@@ -623,10 +636,9 @@ def infer_from_db(
         else:
             low_flex_streak = 0
 
-        event_flag = 1 if reasons else 0
-        if event_flag == 0 and pred == 1:
+        event_flag = 1 if any(reason != 'model apnea prediction' for reason in reasons) else 0
+        if event_flag == 0 and model_event_confident:
             event_flag = 1
-            reasons.append('model apnea prediction')
 
         if event_flag:
             if 'flex breath hold' in reasons:

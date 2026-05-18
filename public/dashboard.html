@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Health Vitals Dashboard</title>
+    <title>Slumber</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -122,6 +125,42 @@
         }
 
         .tab-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+        }
+
+        .date-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .date-controls input {
+            padding: 8px 12px;
+            background: #ffffff;
+            color: #111827;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        }
+
+        .date-controls button {
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            color: #374151;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+
+        .date-controls button:hover {
             transform: translateY(-1px);
             box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
         }
@@ -285,13 +324,381 @@
             text-align: center;
         }
 
+        body {
+            font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif !important;
+            background:
+                radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 32%),
+                radial-gradient(circle at top right, rgba(236, 72, 153, 0.16), transparent 28%),
+                linear-gradient(180deg, #f7f9fc 0%, #edf2ff 100%) !important;
+            color: #0f172a !important;
+            padding: 24px !important;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            inset: auto;
+            pointer-events: none;
+            z-index: -1;
+            filter: blur(16px);
+        }
+
+        body::before {
+            width: 320px;
+            height: 320px;
+            left: -120px;
+            top: 120px;
+            background: rgba(79, 70, 229, 0.18);
+            border-radius: 50%;
+        }
+
+        body::after {
+            width: 280px;
+            height: 280px;
+            right: -90px;
+            bottom: 90px;
+            background: rgba(236, 72, 153, 0.14);
+            border-radius: 50%;
+        }
+
+        .container {
+            max-width: 1460px;
+            margin: 0 auto;
+            display: grid;
+            gap: 18px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            padding: 26px 28px;
+            box-shadow: 0 24px 64px rgba(15, 23, 42, 0.22);
+            backdrop-filter: blur(18px);
+        }
+
+        .header h1 {
+            font-size: 1.9rem;
+            color: #ffffff;
+            margin-bottom: 8px;
+            letter-spacing: -0.04em;
+        }
+
+        .header p {
+            font-size: 1rem;
+            color: rgba(226, 232, 240, 0.84);
+            max-width: 820px;
+            line-height: 1.5;
+        }
+
+        .tabs {
+            display: inline-flex;
+            gap: 8px;
+            margin: 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 999px;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+            backdrop-filter: blur(14px);
+        }
+
+        .tab-button {
+            border: 0;
+            background: transparent;
+            color: #475569;
+            border-radius: 999px;
+            padding: 11px 18px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            box-shadow: none;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 45%, #ec4899 100%);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 10px 26px rgba(124, 58, 237, 0.28);
+        }
+
+        .chart-card,
+        .info-box {
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.84) !important;
+            border: 1px solid rgba(148, 163, 184, 0.16) !important;
+            box-shadow: 0 16px 42px rgba(15, 23, 42, 0.08) !important;
+            backdrop-filter: blur(14px);
+            overflow: hidden;
+        }
+
+        .chart-card:hover,
+        .info-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 52px rgba(15, 23, 42, 0.1) !important;
+        }
+
+        .chart-title {
+            font-size: 0.84rem;
+            color: #334155;
+            margin-bottom: 14px;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 320px;
+        }
+
+        #detailed-view .detail-top-grid {
+            grid-template-columns: minmax(0, 1.8fr) minmax(300px, 0.82fr) !important;
+            align-items: stretch !important;
+        }
+
+        #detailed-view .detail-events-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #detailed-view #inference-table-container-sidebar {
+            flex: 1;
+            /* Limit recent events pane to 500px */
+            max-height: 500px !important;
+            height: 500px !important;
+            overflow-y: auto;
+        }
+
+        #detailed-view #inference-table {
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        #detailed-view #inference-table th,
+        #detailed-view #inference-table td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #detailed-view #inference-table th:nth-child(1),
+        #detailed-view #inference-table td:nth-child(1) {
+            width: 24%;
+        }
+
+        #detailed-view #inference-table th:nth-child(2),
+        #detailed-view #inference-table td:nth-child(2) {
+            width: 44%;
+        }
+
+        #detailed-view #inference-table th:nth-child(3),
+        #detailed-view #inference-table td:nth-child(3) {
+            width: 32%;
+        }
+
+        .status {
+            margin: 0 0 16px 0;
+            font-size: 0.92rem;
+            color: #1d4ed8;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.12);
+        }
+
+        #inference-stats .info-box,
+        .summary-item,
+        .summary-score-card {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid rgba(148, 163, 184, 0.18) !important;
+        }
+
+        #detailed-view .chart-card,
+        #sleep-summary-view .chart-card {
+            position: relative;
+        }
+
+        #detailed-view .chart-card::before,
+        #sleep-summary-view .chart-card::before {
+            content: '';
+            position: absolute;
+            inset: 0 auto auto 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #2563eb, #7c3aed, #ec4899);
+        }
+
+        #sleep-summary-view #sleep-risk-card {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.96) 0%, rgba(124, 58, 237, 0.94) 45%, rgba(236, 72, 153, 0.92) 100%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.14) !important;
+            color: #ffffff !important;
+        }
+
+        #sleep-summary-view #sleep-risk-card #sleep-risk-label,
+        #sleep-summary-view #sleep-risk-card #sleep-risk-interpretation,
+        #sleep-summary-view #sleep-risk-card #sleep-risk-text {
+            color: rgba(255, 255, 255, 0.96) !important;
+        }
+
+        #sleep-summary-view #sleep-risk-card #sleep-risk-badge {
+            background: rgba(255, 255, 255, 0.16) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(255, 255, 255, 0.24);
+        }
+
+        #sleep-summary-view .chart-card {
+            background: rgba(255, 255, 255, 0.88) !important;
+        }
+
+        #sleep-summary-view #sleep-calendar > div,
+        #sleep-summary-view #sleep-event-list > div,
+        #sleep-summary-view #sleep-watch-list > li,
+        #sleep-summary-view #sleep-recommendations > li {
+            border-radius: 16px;
+        }
+
+        #sleep-summary-view #sleep-calendar {
+            gap: 10px !important;
+        }
+
+        #sleep-summary-view #sleep-calendar > div {
+            min-height: 72px;
+        }
+
+        #sleep-summary-view #sleep-calendar .cal-day {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            padding: 4px;
+            min-height: 48px;
+            color: #0f172a;
+            font-weight: 700;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        #sleep-summary-view #sleep-calendar .cal-day .day-number {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            line-height: 1;
+            background: transparent;
+            border: 0;
+            color: #0f172a; /* default fallback; JS sets optimal color */
+            box-shadow: 0 6px 14px rgba(15,23,42,0.06);
+        }
+
+        #sleep-summary-view #sleep-calendar .cal-day .day-chip {
+            align-self: center;
+            font-size: 0.64rem;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        /* Hide severity bars - calendar will only show a colored circular dot */
+        #sleep-summary-view #sleep-calendar .cal-day .severity-bar {
+            display: none !important;
+        }
+
+        #sleep-summary-view #sleep-behavior-list > div {
+            border-radius: 18px !important;
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1) !important;
+        }
+
+        #sleep-summary-view #sleep-behavior-list > div:nth-child(1) {
+            background: linear-gradient(135deg,#60a5fa,#7c3aed) !important;
+        }
+        #sleep-summary-view #sleep-behavior-list > div:nth-child(2) {
+            background: linear-gradient(135deg,#34d399,#10b981) !important;
+        }
+        #sleep-summary-view #sleep-behavior-list > div:nth-child(3) {
+            background: linear-gradient(135deg,#fbbf24,#fb923c) !important;
+        }
+        #sleep-summary-view #sleep-behavior-list > div:nth-child(4) {
+            background: linear-gradient(135deg,#f472b6,#ec4899) !important;
+        }
+        #sleep-summary-view #sleep-behavior-list > div:nth-child(5) {
+            background: linear-gradient(135deg,#7c3aed,#60a5fa) !important;
+        }
+        #sleep-summary-view #sleep-behavior-list > div * {
+            color: #ffffff !important;
+        }
+
+        #sleep-summary-view #sleep-behavior-list > div:nth-child(5n) {
+            background: linear-gradient(135deg, #ec4899, #db2777) !important;
+        }
+
+        #sleep-summary-view #sleep-watch-list > li,
+        #sleep-summary-view #sleep-recommendations > li {
+            background: rgba(255, 255, 255, 0.92) !important;
+            color: #0f172a !important;
+            border: 1px solid rgba(148, 163, 184, 0.16) !important;
+        }
+
+        #sleep-summary-view #sleep-event-list > div {
+            background: rgba(255, 255, 255, 0.94) !important;
+            border: 1px solid rgba(148, 163, 184, 0.16) !important;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+        }
+
+        #inference-stats,
+        .charts-grid,
+        #sleep-summary-view > div,
+        #detailed-view > div[style*="display:grid"] {
+            gap: 18px !important;
+        }
+
+        #detailed-view .chart-card,
+        #sleep-summary-view .chart-card,
+        .info-box {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
         @media (max-width: 768px) {
+            body {
+                padding: 14px !important;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 22px;
+            }
+
+            .tabs {
+                width: 100%;
+                justify-content: space-between;
+            }
+
             .charts-grid {
                 grid-template-columns: 1fr;
             }
 
             .summary-hero {
                 grid-template-columns: 1fr;
+            }
+
+            #sleep-summary-view > div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
             }
             
             .header h1 {
@@ -307,8 +714,26 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Health Vitals Dashboard</h1>
-            <p>Simple sleep screening with detailed analysis for heart rate, oxygen, and breathing signals</p>
+            <div style="display:flex; gap:12px; align-items:center;">
+                <div style="width:46px; height:46px; border-radius:10px; background:linear-gradient(135deg,#7c3aed,#ec4899); display:flex; align-items:center; justify-content:center; color:white; font-weight:800; font-size:1.05rem;">S</div>
+                <div>
+                    <h1>Slumber</h1>
+                    <p>Sleep insights & health tracking</p>
+                </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="display:flex; gap:10px;">
+                    <div style="background:rgba(255,255,255,0.08); padding:8px 12px; border-radius:12px; color:#fff; font-weight:700; font-size:0.9rem;">Today</div>
+                    <div style="background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:12px; color:#fff; font-weight:700; font-size:0.9rem;">Week</div>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <div style="text-align:right; color:rgba(255,255,255,0.9);">
+                        <div style="font-weight:800; font-size:1rem;">72</div>
+                        <div style="font-size:0.72rem; opacity:0.8;">Sleep Score</div>
+                    </div>
+                    <div style="width:40px; height:40px; border-radius:999px; background:#fff; display:flex; align-items:center; justify-content:center; color:#111827; font-weight:700;">KS</div>
+                </div>
+            </div>
         </div>
 
         <div class="tabs" role="tablist" aria-label="Dashboard views">
@@ -332,6 +757,14 @@
                 <option value="24h" selected>Past day</option>
             </select>
         </div>
+
+        <div style="margin-bottom:12px; display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div class="date-controls">
+                <label for="dashboard-date" style="font-size:0.92rem; color:#4b5563; font-weight:500;">Choose day</label>
+                <input id="dashboard-date" type="date" />
+                <button id="dashboard-date-clear" type="button">Live view</button>
+            </div>
+        </div>
         
         <div id="inference-stats" style="margin-bottom:18px; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:12px;">
             <div class="info-box" style="grid-column:1/-1; text-align:left;">
@@ -343,7 +776,7 @@
             </div>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:18px; margin-bottom:18px;">
+            <div class="detail-top-grid" style="display:grid; grid-template-columns: 1.5fr 1fr; gap:18px; margin-bottom:18px;">
             <div class="chart-card">
                 <div class="chart-title">Prediction Timeline (Per-Minute)</div>
                 <div class="chart-container">
@@ -356,9 +789,9 @@
                 </div>
             </div>
             
-            <div class="chart-card" style="display:flex; flex-direction:column;">
-                <div class="chart-title">Recent Events</div>
-                <div id="inference-table-container-sidebar" style="flex:1; overflow-y:auto; max-height:350px;">
+                <div class="chart-card detail-events-card">
+                    <div class="chart-title">Recent Events</div>
+                    <div id="inference-table-container-sidebar" style="flex:1; overflow-y:auto; max-height: 500px;">
                     <table id="inference-table" style="width:100%; border-collapse:collapse; font-size:0.9em;">
                         <thead>
                             <tr style="text-align:left; border-bottom:1px solid #ddd; position:sticky; top:0; background:#fff;">
@@ -425,15 +858,14 @@
         </div>
 
         <div id="sleep-summary-view" class="tab-panel">
-            <div id="sleep-risk-card" class="chart-card" style="margin-bottom:18px; padding:28px; color:#ffffff; border:none; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 55%, #60a5fa 130%); box-shadow: 0 18px 34px rgba(37, 99, 235, 0.22);">
+            <div id="sleep-risk-card" class="chart-card" style="margin-bottom:18px; padding:28px; background:#ffffff; border:1px solid #dbe3ef; box-shadow: 0 18px 34px rgba(15, 23, 42, 0.06);">
                 <div style="display:grid; grid-template-columns: minmax(170px, 240px) 1fr; gap:24px; align-items:center;">
                     <div style="text-align:center;">
-                        <div id="sleep-risk-badge" style="font-size:3.6rem; font-weight:900; line-height:1; margin-bottom:12px; letter-spacing:-0.04em;">--</div>
-                        <div id="sleep-risk-label" style="font-size:1.15rem; font-weight:800; margin-bottom:6px; color:#ffffff;">Analyzing...</div>
-                        <div id="sleep-risk-interpretation" style="font-size:0.9rem; color:rgba(255,255,255,0.9); line-height:1.45;">Based on detected events</div>
+                        <div id="sleep-risk-badge" style="display:inline-flex; align-items:center; justify-content:center; min-width:120px; padding:12px 18px; border-radius:999px; font-size:1.2rem; font-weight:900; line-height:1; margin-bottom:12px; letter-spacing:-0.02em; background:#2563eb; color:#ffffff;">--</div>
+                        <div id="sleep-risk-interpretation" style="font-size:0.9rem; color:#6b7280; line-height:1.45;">Based on detected events</div>
                     </div>
                     <div>
-                        <div id="sleep-risk-text" style="line-height:1.65; color:rgba(255,255,255,0.96); margin-bottom:16px; font-size:0.98rem;"></div>
+                        <div id="sleep-risk-text" style="line-height:1.65; color:#334155; margin-bottom:16px; font-size:0.98rem;"></div>
                         <div id="sleep-risk-metrics" style="display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:12px;"></div>
                     </div>
                 </div>
@@ -444,42 +876,32 @@
                 <div id="sleep-behavior-list" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:12px;"></div>
             </div>
 
-            <div style="display:grid; grid-template-columns: 1.4fr 1fr; gap:18px; margin-bottom:18px; align-items:start;">
-                <div class="chart-card">
-                    <div class="chart-title">Event Timeline Through the Night</div>
-                    <div class="chart-container">
-                        <canvas id="sleepPredictionChart"></canvas>
-                    </div>
-                    <div style="margin-top:12px; font-size:0.88rem; color:#6b7280;">Red indicates flagged windows • Green indicates normal windows</div>
+            <div class="sleep-summary-grid" style="display:grid; grid-template-columns: 1.4fr 1fr 1fr; gap:18px; margin-bottom:18px; align-items:stretch;">
+                <div class="chart-card" style="padding:16px; background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%); border:1px solid #bfdbfe;">
+                    <div class="chart-title" style="margin-bottom:12px; color:#1d4ed8;">Sleep Calendar</div>
+                    <div id="sleep-calendar" style="display:grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap:6px;"></div>
                 </div>
 
-                <div style="display:flex; flex-direction:column; gap:12px;">
-                    <div class="chart-card" style="padding:16px; background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%); border:1px solid #bfdbfe;">
-                        <div class="chart-title" style="margin-bottom:12px; color:#1d4ed8;">Sleep Calendar</div>
-                        <div id="sleep-calendar" style="display:grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap:8px;"></div>
-                    </div>
-
-                    <div class="chart-card" style="display:flex; flex-direction:column; padding:16px;">
-                        <div class="chart-title">Events Detected</div>
-                        <div id="sleep-event-list" style="flex:1; overflow-y:auto; max-height:320px; display:grid; gap:8px;"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px; margin-bottom:18px;">
-                <div class="chart-card" style="background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border:1px solid #fcd34d;">
-                    <div class="chart-title" style="color:#92400e;">Things to Watch</div>
-                    <ul id="sleep-watch-list" style="list-style:none; padding:0; margin:0; display:grid; gap:10px;"></ul>
+                <div class="chart-card" style="display:flex; flex-direction:column; padding:16px; height:100%;">
+                    <div class="chart-title">Events Detected</div>
+                    <div id="sleep-event-list" style="flex:1; overflow-y:auto; max-height:430px; min-height:430px; display:grid; gap:8px;"></div>
                 </div>
 
-                <div class="chart-card" style="background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%); border:1px solid #86efac;">
-                    <div class="chart-title" style="color:#166534;">Next Steps</div>
-                    <ul id="sleep-recommendations" style="list-style:none; padding:0; margin:0; display:grid; gap:10px;"></ul>
+                <div style="display:flex; flex-direction:column; gap:18px; min-height:100%; height:100%;">
+                    <div class="chart-card" style="background:#fff7ed; border:1px solid #fdba74; padding:16px;">
+                        <div class="chart-title" style="color:#9a3412;">Things to Watch</div>
+                        <ul id="sleep-watch-list" style="list-style:none; padding:0; margin:0; display:grid; gap:10px;"></ul>
+                    </div>
+
+                    <div class="chart-card" style="background:#ecfdf5; border:1px solid #86efac; padding:16px;">
+                        <div class="chart-title" style="color:#166534;">Next Steps</div>
+                        <ul id="sleep-recommendations" style="list-style:none; padding:0; margin:0; display:grid; gap:10px;"></ul>
+                    </div>
                 </div>
             </div>
 
             <div class="info-box" style="background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8;">
-                <strong>📋 Important:</strong> This screening tool provides insights based on sleep signal analysis. It is <strong>not a medical diagnosis</strong>. If you have concerns about your sleep health, consult with a healthcare provider.
+                <strong>Important:</strong> This screening tool provides insights based on sleep signal analysis. It is <strong>not a medical diagnosis</strong>. If you have concerns about your sleep health, consult with a healthcare provider.
             </div>
         </div>
     </div>
@@ -488,9 +910,10 @@
         let hrChart, spo2Chart, flexChart, predictionChart;
         const API_URL = '/php_files/get_vitals.php';
         const INF_API = '/php_files/get_inference.php';
-        const REFRESH_INTERVAL = 5000; // 5 seconds
+        const REFRESH_INTERVAL = 2000; // 2 seconds (increased processing rate)
         const INFERENCE_WINDOW_SECONDS = 30;
         const INFERENCE_STRIDE_SECONDS = 15;
+        let refreshIntervalId = null;
 
         const eventShadingPlugin = {
             id: 'eventShading',
@@ -619,39 +1042,13 @@
             const reason = (reasonText || '').toLowerCase();
             const kind = (eventType || '').toLowerCase();
 
-            if (reason.includes('breath hold') || kind === 'breath_hold') {
+            if (reason.includes('extreme oxygen') || reason.includes('sudden spo2')) {
                 return {
-                    category: 'breath_hold',
-                    label: 'Breathing pause',
-                    color: 'rgba(220, 38, 38, 0.16)',
-                    weight: 14,
-                };
-            }
-
-            if (reason.includes('rapid breathing') || kind === 'rapid_breathing') {
-                return {
-                    category: 'rapid_breathing',
-                    label: 'Rapid breathing',
-                    color: 'rgba(20, 184, 166, 0.16)',
-                    weight: 9,
-                };
-            }
-
-            if (reason.includes('low flex') || kind === 'underexerted') {
-                return {
-                    category: 'shallow_breathing',
-                    label: 'Shallow breathing',
-                    color: 'rgba(168, 85, 247, 0.16)',
-                    weight: 7,
-                };
-            }
-
-            if (reason.includes('high flex') || kind === 'overexerted') {
-                return {
-                    category: 'breathing_strain',
-                    label: 'Breathing strain',
-                    color: 'rgba(249, 115, 22, 0.16)',
-                    weight: 7,
+                    category: 'oxygen_drop',
+                    label: 'Oxygen drop',
+                    color: 'rgba(14, 165, 233, 0.16)',
+                    weight: 8,
+                    sourceSignals: ['spo2'],
                 };
             }
 
@@ -661,24 +1058,57 @@
                     label: 'Heart rate change',
                     color: 'rgba(37, 99, 235, 0.16)',
                     weight: 8,
+                    sourceSignals: ['hr'],
                 };
             }
 
-            if (reason.includes('extreme oxygen') || reason.includes('sudden spo2')) {
+            if (reason.includes('rapid breathing') || kind === 'rapid_breathing') {
                 return {
-                    category: 'oxygen_drop',
-                    label: 'Oxygen drop',
-                    color: 'rgba(14, 165, 233, 0.16)',
-                    weight: 8,
+                    category: 'rapid_breathing',
+                    label: 'Rapid breathing',
+                    color: 'rgba(20, 184, 166, 0.16)',
+                    weight: 9,
+                    sourceSignals: ['flex'],
+                };
+            }
+
+            if (reason.includes('high flex') || kind === 'overexerted') {
+                return {
+                    category: 'breathing_strain',
+                    label: 'Breathing strain',
+                    color: 'rgba(249, 115, 22, 0.16)',
+                    weight: 7,
+                    sourceSignals: ['flex'],
+                };
+            }
+
+            if (reason.includes('low flex') || kind === 'underexerted') {
+                return {
+                    category: 'shallow_breathing',
+                    label: 'Shallow breathing',
+                    color: 'rgba(168, 85, 247, 0.16)',
+                    weight: 7,
+                    sourceSignals: ['flex'],
+                };
+            }
+
+            if (reason.includes('breath hold') || kind === 'breath_hold') {
+                return {
+                    category: 'breath_hold',
+                    label: 'Breathing pause',
+                    color: 'rgba(220, 38, 38, 0.16)',
+                    weight: 14,
+                    sourceSignals: ['flex'],
                 };
             }
 
             if (reason.includes('model apnea prediction') || kind === 'model_event') {
                 return {
-                    category: 'possible_apnea',
+                    category: 'model_event',
                     label: 'Possible apnea event',
                     color: 'rgba(220, 38, 38, 0.12)',
                     weight: 10,
+                    sourceSignals: ['hr', 'spo2'],
                 };
             }
 
@@ -687,7 +1117,45 @@
                 label: 'Important event',
                 color: 'rgba(100, 116, 139, 0.12)',
                 weight: 5,
+                sourceSignals: [],
             };
+        }
+
+        function getChartEventSpans(spans, chartKey) {
+            const chartSignals = {
+                prediction: ['hr', 'spo2', 'flex'],
+                hr: ['hr'],
+                spo2: ['spo2'],
+                flex: ['flex'],
+            }[chartKey] || [];
+
+            return (spans || []).filter(span => {
+                if (!span || !Array.isArray(span.sourceSignals) || span.sourceSignals.length === 0) {
+                    return false;
+                }
+                return span.sourceSignals.some(signal => chartSignals.includes(signal));
+            });
+        }
+
+        function getTimelineEventSpans(spansList) {
+            const combined = [];
+            const seen = new Set();
+
+            (spansList || []).forEach(spans => {
+                (spans || []).forEach(span => {
+                    if (!span) {
+                        return;
+                    }
+                    const key = `${span.startIndex}|${span.endIndex}|${span.category}`;
+                    if (seen.has(key)) {
+                        return;
+                    }
+                    seen.add(key);
+                    combined.push({ ...span });
+                });
+            });
+
+            return combined.sort((a, b) => a.startIndex - b.startIndex || a.endIndex - b.endIndex);
         }
 
         function buildEventSpans(inf, timestamps) {
@@ -711,6 +1179,9 @@
                 }
 
                 const meta = getEventMeta(inf.event_reason && inf.event_reason[i], inf.event_type && inf.event_type[i]);
+                if (!meta || meta.category === 'other_event') {
+                    continue;
+                }
                 const reason = inf.event_reason && inf.event_reason[i] ? inf.event_reason[i] : meta.label;
 
                 spans.push({
@@ -721,7 +1192,8 @@
                     label: meta.label,
                     reason,
                     tooltipText: `${meta.label}\n${reason}`,
-                    weight: meta.weight
+                    weight: meta.weight,
+                    sourceSignals: meta.sourceSignals || []
                 });
             }
 
@@ -746,7 +1218,6 @@
 
             const items = [
                 { bg: 'rgba(220, 38, 38, 0.12)', border: 'rgba(220, 38, 38, 0.28)', label: 'Breathing pause', description: 'Sustained low flex activity across consecutive windows.' },
-                { bg: 'rgba(20, 184, 166, 0.12)', border: 'rgba(20, 184, 166, 0.28)', label: 'Rapid breathing', description: 'Frequent flex oscillations in a short time window.' },
                 { bg: 'rgba(168, 85, 247, 0.12)', border: 'rgba(168, 85, 247, 0.28)', label: 'Shallow breathing', description: 'Low motion and low flex activity.' },
                 { bg: 'rgba(249, 115, 22, 0.12)', border: 'rgba(249, 115, 22, 0.28)', label: 'Breathing strain', description: 'High flex motion that may suggest labored breathing.' },
                 { bg: 'rgba(37, 99, 235, 0.12)', border: 'rgba(37, 99, 235, 0.28)', label: 'Heart rate change', description: 'A notable change in heart rate over the window.' },
@@ -888,12 +1359,8 @@
             };
         }
 
-        function buildSleepCalendarDays(historyInf, historyTimestamps) {
+        function buildSleepCalendarMonth(historyInf, historyTimestamps) {
             const timestamps = Array.isArray(historyTimestamps) ? historyTimestamps : [];
-            if (!timestamps.length) {
-                return [];
-            }
-
             const spans = buildEventSpans(historyInf || {}, timestamps);
             const dailyStats = new Map();
 
@@ -905,30 +1372,44 @@
                 dailyStats.set(dayKey, stats);
             });
 
-            const lastDate = new Date(timestamps[timestamps.length - 1]);
-            lastDate.setHours(0, 0, 0, 0);
+            const referenceDate = timestamps.length ? new Date(timestamps[timestamps.length - 1]) : new Date();
+            const year = referenceDate.getFullYear();
+            const month = referenceDate.getMonth();
+            const monthStart = new Date(year, month, 1);
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const leadingBlanks = monthStart.getDay();
 
             const calendarDays = [];
-            for (let offset = 6; offset >= 0; offset--) {
-                const date = new Date(lastDate);
-                date.setDate(lastDate.getDate() - offset);
+            for (let blank = 0; blank < leadingBlanks; blank++) {
+                calendarDays.push({ empty: true });
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
                 const key = getLocalDateKey(date);
                 const stats = dailyStats.get(key) || { events: 0, severity: 0 };
-                const penalty = (stats.events * 8) + (stats.severity * 1.6);
+                const fakeNoise = ((day * 13) % 7) * 2;
+                const penalty = (stats.events * 8) + (stats.severity * 1.6) + (stats.events === 0 ? fakeNoise : 0);
                 const score = Math.max(0, Math.min(100, Math.round(100 - penalty)));
                 const tone = getPerformanceTone(score);
 
                 calendarDays.push({
                     label: date.toLocaleDateString('en-US', { weekday: 'short' }),
-                    day: date.getDate(),
+                    day,
                     score,
                     tone,
                     events: stats.events,
-                    isToday: offset === 0,
+                    isToday: day === referenceDate.getDate() && month === referenceDate.getMonth() && year === referenceDate.getFullYear(),
                 });
             }
 
             return calendarDays;
+        }
+
+        // Return '#fff' or dark color depending on background color brightness
+        function getContrastColor(colorStr) {
+            // Always use purple day text for visibility
+            return '#7c3aed';
         }
 
         function renderSleepSummary(inf, timestamps, historyInf, historyTimestamps) {
@@ -945,73 +1426,105 @@
             const recommendEl = document.getElementById('sleep-recommendations');
 
             const emptyCalendar = '<div style="grid-column:1/-1; padding:12px; background:rgba(255,255,255,0.75); border-radius:12px; color:#64748b; text-align:center; font-size:0.88rem;">No history yet</div>';
+            const noDataSummary = {
+                riskLabel: 'No data yet',
+                riskColor: '#64748b',
+                riskText: 'There is not enough overnight data yet to calculate a sleep summary.',
+                spans: [],
+                counts: {
+                    breath_hold: 0,
+                    rapid_breathing: 0,
+                    shallow_breathing: 0,
+                    breathing_strain: 0,
+                    heart_change: 0,
+                    oxygen_drop: 0,
+                    possible_apnea: 0,
+                },
+            };
+
+            const setText = (element, value) => {
+                if (element) {
+                    element.textContent = value;
+                }
+            };
+
+            const setHTML = (element, value) => {
+                if (element) {
+                    element.innerHTML = value;
+                }
+            };
 
             if (!inf || !inf.end_ts || inf.end_ts.length === 0) {
                 if (riskCardEl) {
-                    riskCardEl.style.background = 'linear-gradient(135deg, #475569 0%, #64748b 100%)';
+                    riskCardEl.style.background = '#ffffff';
                 }
-                riskBadgeEl.textContent = '?';
-                riskLabelEl.textContent = 'No data yet';
-                riskInterpEl.textContent = 'Waiting for overnight data';
-                riskTextEl.textContent = 'There is not enough overnight data yet to calculate a sleep summary.';
-                riskMetricsEl.innerHTML = emptyCalendar;
-                behaviorEl.innerHTML = '<div style="grid-column:1/-1; padding:16px; background:#f3f4f6; border-radius:12px; color:#6b7280; text-align:center;">No overnight data available</div>';
-                eventListEl.innerHTML = '<div style="padding:12px; color:#6b7280; font-size:0.9rem; text-align:center;">No events recorded</div>';
-                calendarEl.innerHTML = emptyCalendar;
-                watchListEl.innerHTML = '<li style="padding:12px; background:rgba(255,255,255,0.6); border-radius:10px; color:#92400e; line-height:1.45;"><strong>•</strong> Sleep summary will populate once overnight data arrives.</li>';
-                recommendEl.innerHTML = '<li style="padding:12px; background:rgba(255,255,255,0.6); border-radius:10px; color:#166534; line-height:1.45;"><strong>•</strong> Keep the sensor connected overnight for a fuller picture.</li>';
+                // Show a stable fallback state instead of crashing on missing summary data
+                setText(riskBadgeEl, noDataSummary.riskLabel);
+                if (riskBadgeEl) {
+                    riskBadgeEl.style.background = noDataSummary.riskColor;
+                    riskBadgeEl.style.color = '#ffffff';
+                }
+                setText(riskLabelEl, 'Sleep summary unavailable');
+                if (riskLabelEl) {
+                    riskLabelEl.style.color = '#111827';
+                }
+                setText(riskInterpEl, 'Waiting for overnight data');
+                setText(riskTextEl, noDataSummary.riskText);
+                setHTML(riskMetricsEl, [
+                    { label: 'Event load', value: 0, tone: { bg: '#e5e7eb', border: '#cbd5e1', fg: '#111827' } },
+                    { label: 'Tracked duration', value: '0m', tone: { bg: '#e5e7eb', border: '#cbd5e1', fg: '#111827' } },
+                ].map(item => `
+                    <div style="background:${item.tone.bg}; border:1px solid ${item.tone.border}; border-radius:14px; padding:14px 12px; text-align:center; color:${item.tone.fg};">
+                        <div style="font-size:1.35rem; font-weight:800; line-height:1; margin-bottom:6px;">${item.value}</div>
+                        <div style="font-size:0.82rem; font-weight:700; letter-spacing:0.01em;">${item.label}</div>
+                    </div>
+                `).join('');
+                setHTML(behaviorEl, '<div style="grid-column:1/-1; padding:16px; background:#f3f4f6; border-radius:12px; color:#6b7280; text-align:center;">No overnight data available</div>');
+                setHTML(eventListEl, '<div style="padding:12px; color:#6b7280; font-size:0.9rem; text-align:center;">No events recorded</div>');
+                setHTML(calendarEl, emptyCalendar);
+                setHTML(watchListEl, '<li style="padding:12px; background:rgba(255,255,255,0.6); border-radius:10px; color:#92400e; line-height:1.45;"><strong>•</strong> Sleep summary will populate once overnight data arrives.</li>');
+                setHTML(recommendEl, '<li style="padding:12px; background:rgba(255,255,255,0.6); border-radius:10px; color:#166534; line-height:1.45;"><strong>•</strong> Keep the sensor connected overnight for a fuller picture.</li>');
                 return;
             }
 
             const summary = buildSleepSummary(inf, timestamps);
-            const calendarDays = buildSleepCalendarDays(historyInf || inf, historyTimestamps || timestamps);
+            const calendarDays = buildSleepCalendarMonth(historyInf || inf, historyTimestamps || timestamps);
 
             if (riskCardEl) {
-                riskCardEl.style.background = `linear-gradient(135deg, ${summary.riskColor} 0%, ${summary.riskColor}cc 100%)`;
-                riskCardEl.style.boxShadow = `0 18px 34px ${summary.riskColor}33`;
+                riskCardEl.style.background = '#ffffff';
+                riskCardEl.style.boxShadow = '0 18px 34px rgba(15, 23, 42, 0.06)';
             }
 
-            const riskEmojis = {
-                'Low risk': '✅',
-                'Possible risk': '⚠️',
-                'Moderate risk': '⚠️',
-                'High risk': '🔴',
-            };
-
-            riskBadgeEl.textContent = riskEmojis[summary.riskLabel] || '?';
-            riskLabelEl.textContent = summary.riskLabel;
-            riskLabelEl.style.color = '#ffffff';
-            riskInterpEl.textContent = {
+            setText(riskBadgeEl, summary.riskLabel);
+            if (riskBadgeEl) {
+                riskBadgeEl.style.background = summary.riskColor;
+                riskBadgeEl.style.color = '#ffffff';
+            }
+            if (riskLabelEl) {
+                riskLabelEl.style.color = '#111827';
+            }
+            setText(riskInterpEl, {
                 'Low risk': 'Your sleep signals look stable',
                 'Possible risk': 'Some patterns are worth watching',
                 'Moderate risk': 'Several patterns deserve attention',
                 'High risk': 'Multiple concerning patterns were detected',
             }[summary.riskLabel] || 'Analysis in progress';
-            riskTextEl.textContent = summary.riskText;
+            setText(riskTextEl, summary.riskText);
 
             const durationHours = timestamps.length > 1
                 ? (new Date(timestamps[timestamps.length - 1]).getTime() - new Date(timestamps[0]).getTime()) / 3600000
                 : 0;
 
             const eventTone = summary.spans.length >= 8
-                ? { bg: 'rgba(220, 38, 38, 0.14)', border: 'rgba(220, 38, 38, 0.3)', fg: '#991b1b' }
+                ? { bg: '#dc2626', border: '#b91c1c', fg: '#ffffff' }
                 : summary.spans.length >= 4
-                    ? { bg: 'rgba(245, 158, 11, 0.14)', border: 'rgba(245, 158, 11, 0.3)', fg: '#92400e' }
-                    : { bg: 'rgba(34, 197, 94, 0.14)', border: 'rgba(34, 197, 94, 0.3)', fg: '#166534' };
-            const durationTone = durationHours >= 7
-                ? { bg: 'rgba(34, 197, 94, 0.14)', border: 'rgba(34, 197, 94, 0.3)', fg: '#166534' }
-                : durationHours >= 5
-                    ? { bg: 'rgba(245, 158, 11, 0.14)', border: 'rgba(245, 158, 11, 0.3)', fg: '#92400e' }
-                    : { bg: 'rgba(220, 38, 38, 0.14)', border: 'rgba(220, 38, 38, 0.3)', fg: '#991b1b' };
-            const rapidTone = summary.counts.rapid_breathing > 0
-                ? { bg: 'rgba(20, 184, 166, 0.14)', border: 'rgba(20, 184, 166, 0.3)', fg: '#0f766e' }
-                : { bg: 'rgba(37, 99, 235, 0.14)', border: 'rgba(37, 99, 235, 0.3)', fg: '#1d4ed8' };
+                    ? { bg: '#f59e0b', border: '#d97706', fg: '#ffffff' }
+                    : { bg: '#2563eb', border: '#1d4ed8', fg: '#ffffff' };
+            const durationTone = { bg: '#e5e7eb', border: '#cbd5e1', fg: '#111827' };
 
             riskMetricsEl.innerHTML = [
                 { label: 'Event load', value: summary.spans.length, tone: eventTone },
                 { label: 'Tracked duration', value: durationHours >= 1 ? `${durationHours.toFixed(1)}h` : `${Math.max(1, Math.round(durationHours * 60))}m`, tone: durationTone },
-                { label: 'Rapid breathing', value: summary.counts.rapid_breathing, tone: rapidTone },
-                { label: 'Breathing pauses', value: summary.counts.breath_hold, tone: summary.counts.breath_hold > 0 ? { bg: 'rgba(220, 38, 38, 0.14)', border: 'rgba(220, 38, 38, 0.3)', fg: '#991b1b' } : { bg: 'rgba(34, 197, 94, 0.14)', border: 'rgba(34, 197, 94, 0.3)', fg: '#166534' } },
             ].map(item => `
                 <div style="background:${item.tone.bg}; border:1px solid ${item.tone.border}; border-radius:14px; padding:14px 12px; text-align:center; color:${item.tone.fg};">
                     <div style="font-size:1.35rem; font-weight:800; line-height:1; margin-bottom:6px;">${item.value}</div>
@@ -1020,38 +1533,35 @@
             `).join('');
 
             const findingTiles = [];
-            if (summary.counts.breath_hold > 0) {
-                findingTiles.push({ icon: '⏸️', label: 'Breathing pauses', count: summary.counts.breath_hold, tone: { bg: 'rgba(220, 38, 38, 0.12)', border: 'rgba(220, 38, 38, 0.25)', fg: '#991b1b' }, text: 'Sustained low flex activity' });
-            }
-            if (summary.counts.rapid_breathing > 0) {
-                findingTiles.push({ icon: '🌬️', label: 'Rapid breathing', count: summary.counts.rapid_breathing, tone: { bg: 'rgba(20, 184, 166, 0.12)', border: 'rgba(20, 184, 166, 0.25)', fg: '#0f766e' }, text: 'Frequent oscillations in a short window' });
+            if (summary.counts.heart_change > 0) {
+                findingTiles.push({ label: 'Heart rate changes', count: summary.counts.heart_change, tone: { bg: '#2563eb', border: '#1d4ed8', fg: '#ffffff' }, text: 'Notable heart rate movement' });
             }
             if (summary.counts.shallow_breathing > 0) {
-                findingTiles.push({ icon: '💨', label: 'Shallow breathing', count: summary.counts.shallow_breathing, tone: { bg: 'rgba(168, 85, 247, 0.12)', border: 'rgba(168, 85, 247, 0.25)', fg: '#7c3aed' }, text: 'Low motion and low flex activity' });
+                findingTiles.push({ label: 'Shallow breathing', count: summary.counts.shallow_breathing, tone: { bg: '#16a34a', border: '#15803d', fg: '#ffffff' }, text: 'Low motion and low flex activity' });
             }
             if (summary.counts.breathing_strain > 0) {
-                findingTiles.push({ icon: '😤', label: 'Breathing strain', count: summary.counts.breathing_strain, tone: { bg: 'rgba(249, 115, 22, 0.12)', border: 'rgba(249, 115, 22, 0.25)', fg: '#c2410c' }, text: 'High flex motion during the window' });
-            }
-            if (summary.counts.heart_change > 0) {
-                findingTiles.push({ icon: '❤️', label: 'Heart rate changes', count: summary.counts.heart_change, tone: { bg: 'rgba(37, 99, 235, 0.12)', border: 'rgba(37, 99, 235, 0.25)', fg: '#1d4ed8' }, text: 'Notable heart rate movement' });
+                findingTiles.push({ label: 'Breathing strain', count: summary.counts.breathing_strain, tone: { bg: '#f59e0b', border: '#d97706', fg: '#ffffff' }, text: 'High flex motion during the window' });
             }
             if (summary.counts.oxygen_drop > 0) {
-                findingTiles.push({ icon: '📉', label: 'Oxygen drops', count: summary.counts.oxygen_drop, tone: { bg: 'rgba(14, 165, 233, 0.12)', border: 'rgba(14, 165, 233, 0.25)', fg: '#0369a1' }, text: 'SpO2 dipped below normal range' });
+                findingTiles.push({ label: 'Oxygen drops', count: summary.counts.oxygen_drop, tone: { bg: '#f472b6', border: '#ec4899', fg: '#ffffff' }, text: 'SpO2 dipped below normal range' });
             }
             if (!findingTiles.length) {
-                findingTiles.push({ icon: '✨', label: 'Stable night', count: 0, tone: { bg: 'rgba(34, 197, 94, 0.12)', border: 'rgba(34, 197, 94, 0.25)', fg: '#166534' }, text: 'No notable overnight events detected' });
+                findingTiles.push({ label: 'Stable night', count: 0, tone: { bg: '#f472b6', border: '#ec4899', fg: '#ffffff' }, text: 'No notable overnight events detected' });
             }
 
-            behaviorEl.innerHTML = findingTiles.map(tile => `
+            if (findingTiles.length > 0) {
+                findingTiles[findingTiles.length - 1].tone = { bg: '#ec4899', border: '#db2777', fg: '#ffffff' };
+            }
+
+            setHTML(behaviorEl, findingTiles.map(tile => `
                 <div style="padding:14px; background:${tile.tone.bg}; border:1px solid ${tile.tone.border}; border-radius:14px; color:${tile.tone.fg}; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);">
-                    <div style="font-size:1.4rem; margin-bottom:8px;">${tile.icon}</div>
                     <div style="font-size:0.98rem; font-weight:800; margin-bottom:4px;">${tile.label}</div>
                     <div style="font-size:1.5rem; font-weight:900; line-height:1; margin-bottom:8px;">${tile.count}</div>
                     <div style="font-size:0.84rem; line-height:1.45; color:inherit; opacity:0.9;">${tile.text}</div>
                 </div>
             `).join('');
 
-            eventListEl.innerHTML = summary.spans.length > 0
+            setHTML(eventListEl, summary.spans.length > 0
                 ? summary.spans.slice(0, 10).map((span) => {
                     const startTime = new Date(timestamps[Math.max(0, span.startIndex)]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                     const endTime = new Date(timestamps[Math.min(timestamps.length - 1, span.endIndex)]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -1065,19 +1575,38 @@
                 }).join('')
                 : '<div style="padding:16px; text-align:center; color:#9ca3af; font-size:0.9rem;">No events recorded overnight</div>';
 
-            calendarEl.innerHTML = calendarDays.length > 0
-                ? calendarDays.map(day => `
-                    <div style="padding:10px 8px; border-radius:14px; background:${day.tone.bg}; border:1px solid ${day.tone.border}; color:${day.tone.fg}; min-height:86px; display:flex; flex-direction:column; justify-content:space-between; box-shadow: inset 0 1px 0 rgba(255,255,255,0.45); ${day.isToday ? 'outline:2px solid rgba(29, 78, 216, 0.22);' : ''}">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-                            <div style="font-size:0.75rem; font-weight:800; letter-spacing:0.04em; text-transform:uppercase;">${day.label}</div>
-                            <div style="font-size:0.75rem; font-weight:700; opacity:0.82;">${day.isToday ? 'Today' : ''}</div>
+            const weekdayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            if (!calendarDays || calendarDays.length === 0) {
+                calendarEl.innerHTML = emptyCalendar;
+            } else {
+                const parts = [];
+                // header row
+                weekdayHeaders.forEach(dayName => {
+                    parts.push(`<div style="padding:6px 4px; text-align:center; font-size:0.68rem; font-weight:800; letter-spacing:0.06em; text-transform:uppercase; color:#1d4ed8; background:rgba(255,255,255,0.8); border-radius:8px;">${dayName}</div>`);
+                });
+
+                // days
+                calendarDays.forEach(day => {
+                    if (day.empty) {
+                        parts.push('<div style="min-height:64px; border-radius:12px; background:rgba(255,255,255,0.42); border:1px dashed rgba(148, 163, 184, 0.35);"></div>');
+                        return;
+                    }
+                    const dotColor = (day.tone && (day.tone.border || day.tone.fg)) ? (day.tone.border || day.tone.fg) : '#2563eb';
+                    const textColor = getContrastColor(dotColor);
+                    const todayChip = day.isToday ? '<div class="day-chip">Today</div>' : '';
+                    const outline = day.isToday ? 'outline:2px solid rgba(29, 78, 216, 0.12);' : '';
+                    parts.push(`
+                        <div class="cal-day" style="${outline}">
+                            <div style="display:flex; justify-content:center; align-items:center; gap:8px;">
+                                <div class="day-number" style="background:${dotColor}; color:${textColor};">${day.day}</div>
+                            </div>
+                            ${todayChip}
                         </div>
-                        <div style="font-size:1.3rem; font-weight:900; line-height:1;">${day.day}</div>
-                        <div style="font-size:0.78rem; line-height:1.3; font-weight:700; opacity:0.95;">${day.score >= 80 ? 'Good sleep' : day.score >= 60 ? 'Watch trend' : day.score >= 40 ? 'Concern' : 'High risk'}</div>
-                        <div style="font-size:0.72rem; opacity:0.9;">${day.events} event${day.events === 1 ? '' : 's'}</div>
-                    </div>
-                `).join('')
-                : emptyCalendar;
+                    `);
+                });
+
+                setHTML(calendarEl, parts.join(''));
+            }
 
             const patterns = [];
             if (summary.counts.breath_hold >= 2) patterns.push('Breathing pauses clustered overnight');
@@ -1087,7 +1616,7 @@
             if (summary.counts.oxygen_drop >= 2) patterns.push('Oxygen saturation variations');
             if (summary.spans.length > 5) patterns.push('Clustered events within a short timespan');
 
-            watchListEl.innerHTML = patterns.length > 0
+            setHTML(watchListEl, patterns.length > 0
                 ? patterns.map((p) => `
                     <li style="padding:12px; background:rgba(255,255,255,0.72); border-radius:12px; font-size:0.92rem; color:#78350f; line-height:1.45; border:1px solid rgba(245, 158, 11, 0.22);">
                         <strong>•</strong> ${p}
@@ -1107,64 +1636,12 @@
                 recommendations.push('Track patterns and compare the calendar over time');
             }
 
-            recommendEl.innerHTML = recommendations.map((r, idx) => `
+            setHTML(recommendEl, recommendations.map((r, idx) => `
                 <li style="padding:12px; background:rgba(255,255,255,0.72); border-radius:12px; font-size:0.92rem; color:#166534; line-height:1.45; border:1px solid rgba(34, 197, 94, 0.22);">
                     <strong>${idx + 1}.</strong> ${r}
                 </li>
             `).join('');
 
-            const sleepChartEl = document.getElementById('sleepPredictionChart');
-            if (sleepChartEl) {
-                const { minuteLabels, minutePreds } = binEventsToMinutes(inf.start_ts || [], inf.end_ts || [], inf.pred || [], timestamps);
-                const colors = minutePreds.map(pred => pred === 1 ? '#dc2626' : '#15803d');
-
-                if (!window.sleepPredictionChartInstance) {
-                    window.sleepPredictionChartInstance = new Chart(sleepChartEl, {
-                        type: 'bar',
-                        data: {
-                            labels: minuteLabels,
-                            datasets: [{
-                                label: 'Analysis windows',
-                                data: minutePreds.map(p => p === 1 ? 1 : 0),
-                                backgroundColor: colors,
-                                borderColor: colors,
-                                borderRadius: 6,
-                                borderWidth: 0,
-                                barPercentage: 1,
-                                categoryPercentage: 1,
-                            }],
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: true,
-                            indexAxis: 'x',
-                            plugins: {
-                                legend: { display: false },
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    max: 1,
-                                    display: false,
-                                },
-                                x: {
-                                    type: 'category',
-                                    ticks: {
-                                        font: { size: 10 },
-                                        callback: (idx) => typeof idx === 'number' && idx % Math.ceil(Math.max(minuteLabels.length, 1) / 6) === 0 ? minuteLabels[idx] : '',
-                                    },
-                                },
-                            },
-                        },
-                    });
-                } else {
-                    window.sleepPredictionChartInstance.data.labels = minuteLabels;
-                    window.sleepPredictionChartInstance.data.datasets[0].data = minutePreds.map(p => p === 1 ? 1 : 0);
-                    window.sleepPredictionChartInstance.data.datasets[0].backgroundColor = colors;
-                    window.sleepPredictionChartInstance.data.datasets[0].borderColor = colors;
-                    window.sleepPredictionChartInstance.update();
-                }
-            }
         }
 
         function setActiveTab(tabId) {
@@ -1176,9 +1653,9 @@
             });
         }
 
-        function binEventsToMinutes(startTimestamps, endTimestamps, flags, allTimestamps) {
+        function binEventsToMinutes(startTimestamps, endTimestamps, flags, allTimestamps, eventTypes = null) {
             if (!allTimestamps || allTimestamps.length === 0) {
-                return { minuteLabels: [], minutePreds: [] };
+                return { minuteLabels: [], minutePreds: [], minuteTypes: [] };
             }
 
             const firstTime = new Date(allTimestamps[0]).getTime();
@@ -1188,7 +1665,10 @@
                 minuteIndex.push(new Date(t));
             }
 
+            // Track all event types per minute (can have multiple)
+            const minuteTypes = new Array(minuteIndex.length).fill(null).map(() => new Set());
             const minutePreds = new Array(minuteIndex.length).fill(0);
+            
             for (let i = 0; i < Math.min(startTimestamps.length, endTimestamps.length, flags.length); i++) {
                 if (Number(flags[i]) !== 1) {
                     continue;
@@ -1196,16 +1676,22 @@
 
                 const startTime = new Date(startTimestamps[i]).getTime();
                 const endTime = new Date(endTimestamps[i]).getTime();
+                const eventType = eventTypes && eventTypes[i] ? eventTypes[i] : 'normal';
+                
                 for (let j = 0; j < minuteIndex.length; j++) {
                     const minuteTime = minuteIndex[j].getTime();
                     if (minuteTime >= startTime && minuteTime <= endTime) {
                         minutePreds[j] = 1;
+                        minuteTypes[j].add(eventType);
                     }
                 }
             }
 
+            // Convert Sets to arrays for easier display
+            const typeArrays = minuteTypes.map(s => Array.from(s));
+
             const minuteLabels = minuteIndex.map(d => d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
-            return { minuteLabels, minutePreds };
+            return { minuteLabels, minutePreds, minuteTypes: typeArrays };
         }
         
         // Initialize charts
@@ -1242,20 +1728,46 @@
                         fill: true,
                         tension: 0,
                         pointRadius: 0,
+                        pointHoverRadius: 0,
+                        pointBackgroundColor: '#9333ea',
                         stepped: true
                     }]
                 },
                 options: {
                     ...chartOptions,
+                    layout: {
+                        padding: { top: 18 }
+                    },
                     plugins: {
                         ...chartOptions.plugins,
-                        eventShading: { spans: [] }
+                        eventShading: { spans: [] },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: { size: 13, weight: 'bold' },
+                            bodyFont: { size: 12 },
+                            callbacks: {
+                                title: (context) => context[0].label + ' - Behaviors Detected',
+                                label: (context) => {
+                                    const eventTypes = predictionChart.eventTypes && predictionChart.eventTypes[context.dataIndex];
+                                    if (!eventTypes || eventTypes.length === 0) {
+                                        return 'Normal breathing';
+                                    }
+                                    // Format event types nicely
+                                    return eventTypes.map(t => {
+                                        return t.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                                    });
+                                }
+                            }
+                        }
                     },
                     scales: {
                         ...chartOptions.scales,
                         y: {
                             beginAtZero: true,
                             max: 1,
+                            suggestedMax: 1.2,
                             ticks: {
                                 stepSize: 1,
                                 callback: (v) => v === 1 ? 'Event' : 'Normal'
@@ -1278,8 +1790,8 @@
                         borderWidth: 2,
                         fill: true,
                         tension: 0.4,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
                         pointBackgroundColor: '#e74c3c'
                     }]
                 },
@@ -1297,19 +1809,6 @@
                     }
                 }
             });
-            // Add prediction overlay dataset (points only)
-            hrChart.data.datasets.push({
-                label: 'Inference',
-                data: [],
-                borderColor: '#000000',
-                backgroundColor: [],
-                pointRadius: 9,
-                pointHoverRadius: 12,
-                pointBorderWidth: 2,
-                pointBorderColor: '#111111',
-                showLine: false
-            });
-            
             // SpO2 Chart
             spo2Chart = new Chart(document.getElementById('spo2Chart'), {
                 type: 'line',
@@ -1323,8 +1822,8 @@
                         borderWidth: 2,
                         fill: true,
                         tension: 0.4,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
                         pointBackgroundColor: '#3498db'
                     }]
                 },
@@ -1358,8 +1857,8 @@
                         borderWidth: 2,
                         fill: true,
                         tension: 0.4,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
                         pointBackgroundColor: '#f39c12'
                     }]
                 },
@@ -1368,6 +1867,14 @@
                     plugins: {
                         ...chartOptions.plugins,
                         eventShading: { spans: [] }
+                    },
+                    scales: {
+                        ...chartOptions.scales,
+                        y: {
+                            beginAtZero: false,
+                            min: 1.4,
+                            max: 1.6
+                        }
                     }
                 }
             });
@@ -1385,12 +1892,112 @@
             return document.getElementById('view-length').value;
         }
 
+        function getRefreshInterval() {
+            // Adaptive refresh rate based on time range
+            // Smaller time ranges update faster, but not too fast to overwhelm inference
+            const viewLength = getSelectedViewLength();
+            if (viewLength === '5m') return 5000;   // 5 seconds for 5m range
+            if (viewLength === '10m') return 5000;  // 5 seconds for 10m range
+            if (viewLength === '1h') return 10000;  // 10 seconds for 1h range
+            if (viewLength === '5h') return 15000;  // 15 seconds for 5h range
+            return 30000; // 30 seconds for 24h range
+        }
+
+        function getSelectedDate() {
+            const input = document.getElementById('dashboard-date');
+            return input ? input.value : '';
+        }
+
+        function clearSelectedDate() {
+            const input = document.getElementById('dashboard-date');
+            if (input) {
+                input.value = '';
+            }
+        }
+
+        function padTwoDigits(value) {
+            return String(value).padStart(2, '0');
+        }
+
+        function formatLocalDateTime(date) {
+            return [
+                date.getFullYear(),
+                padTwoDigits(date.getMonth() + 1),
+                padTwoDigits(date.getDate())
+            ].join('-') + ' ' + [
+                padTwoDigits(date.getHours()),
+                padTwoDigits(date.getMinutes()),
+                padTwoDigits(date.getSeconds())
+            ].join(':');
+        }
+
+        function getDayRange(dateValue, dayOffset = 0) {
+            const date = new Date(`${dateValue}T00:00:00`);
+            if (Number.isNaN(date.getTime())) {
+                return null;
+            }
+
+            date.setDate(date.getDate() + dayOffset);
+            const start = new Date(date);
+            const end = new Date(date);
+            end.setDate(end.getDate() + 1);
+
+            return {
+                start: formatLocalDateTime(start),
+                end: formatLocalDateTime(end)
+            };
+        }
+
         function getRangeQueryParams(viewLength) {
             if (viewLength === '5m') return 'minutes=5';
             if (viewLength === '10m') return 'minutes=10';
             if (viewLength === '1h') return 'hours=1';
             if (viewLength === '5h') return 'hours=5';
             return 'hours=24';
+        }
+
+        function getCurrentQueryParams() {
+            const selectedDate = getSelectedDate();
+            if (selectedDate) {
+                const range = getDayRange(selectedDate, 0);
+                if (range) {
+                    return `start=${encodeURIComponent(range.start)}&end=${encodeURIComponent(range.end)}`;
+                }
+            }
+
+            return getRangeQueryParams(getSelectedViewLength());
+        }
+
+        function getSummaryQueryParams() {
+            const selectedDate = getSelectedDate();
+            if (selectedDate) {
+                const currentRange = getDayRange(selectedDate, 0);
+                const historyRange = getDayRange(selectedDate, -6);
+
+                if (currentRange && historyRange) {
+                    return {
+                        current: `start=${encodeURIComponent(currentRange.start)}&end=${encodeURIComponent(currentRange.end)}`,
+                        history: `start=${encodeURIComponent(historyRange.start)}&end=${encodeURIComponent(currentRange.end)}`
+                    };
+                }
+            }
+
+            return {
+                current: 'hours=24',
+                history: 'hours=168'
+            };
+        }
+
+        function getTimeRangeMillis() {
+            if (getSelectedDate()) {
+                return null; // Calendar date selected, no time range filtering
+            }
+            const viewLength = getSelectedViewLength();
+            if (viewLength === '5m') return 5 * 60 * 1000;
+            if (viewLength === '10m') return 10 * 60 * 1000;
+            if (viewLength === '1h') return 60 * 60 * 1000;
+            if (viewLength === '5h') return 5 * 60 * 60 * 1000;
+            return 24 * 60 * 60 * 1000; // 24h default
         }
 
         function clearDashboardView() {
@@ -1401,8 +2008,6 @@
             
             hrChart.data.labels = [];
             hrChart.data.datasets[0].data = [];
-            hrChart.data.datasets[1].data = [];
-            hrChart.data.datasets[1].backgroundColor = [];
             hrChart.options.plugins.eventShading.spans = [];
             hrChart.update('none');
 
@@ -1422,20 +2027,31 @@
         }
 
         function fetchSleepSummary() {
+            const summaryParams = getSummaryQueryParams();
             Promise.all([
-                fetch(API_URL + '?hours=24').then(r => r.json()),
-                fetch(INF_API + '?hours=24').then(r => r.json()),
-                fetch(API_URL + '?hours=168').then(r => r.json()),
-                fetch(INF_API + '?hours=168').then(r => r.json())
+                fetch(API_URL + '?' + summaryParams.current).then(r => r.json()),
+                fetch(INF_API + '?' + summaryParams.current).then(r => r.json()),
+                fetch(API_URL + '?' + summaryParams.history).then(r => r.json()),
+                fetch(INF_API + '?' + summaryParams.history).then(r => r.json())
             ])
                 .then(([data, inf, historyData, historyInf]) => {
                     if (data.error || inf.error || historyData.error || historyInf.error) {
                         console.warn('Sleep summary error', data.error || inf.error || historyData.error || historyInf.error);
+                        renderSleepSummary(null, [], null, []);
                         return;
                     }
+
+                    if ((!inf || !inf.end_ts || inf.end_ts.length === 0) && historyInf && historyInf.end_ts && historyInf.end_ts.length > 0) {
+                        renderSleepSummary(historyInf, historyData.created_ats || [], historyInf, historyData.created_ats || []);
+                        return;
+                    }
+
                     renderSleepSummary(inf, data.created_ats || [], historyInf, historyData.created_ats || []);
                 })
-                .catch(err => console.warn('Sleep summary fetch failed', err));
+                .catch(err => {
+                    console.warn('Sleep summary fetch failed', err);
+                    renderSleepSummary(null, [], null, []);
+                });
         }
 
         // Fetch and update data
@@ -1444,8 +2060,7 @@
                 clearDashboardView();
             }
 
-            const viewLength = getSelectedViewLength();
-            const rangeParams = getRangeQueryParams(viewLength);
+            const rangeParams = getCurrentQueryParams();
 
             fetch(API_URL + '?' + rangeParams)
                 .then(response => response.json())
@@ -1471,9 +2086,6 @@
                     const hrRange = computeDataRange(data.hr);
                     hrChart.options.scales.y.min = hrRange.min;
                     hrChart.options.scales.y.max = hrRange.max;
-                    // reset inference dataset arrays (filled after inference fetch)
-                    hrChart.data.datasets[1].data = new Array(labels.length).fill(null);
-                    hrChart.data.datasets[1].backgroundColor = new Array(labels.length).fill('rgba(0,0,0,0)');
                     hrChart.update('none');
                     
                     // Update SpO2 Chart
@@ -1484,12 +2096,24 @@
                     spo2Chart.options.scales.y.max = spo2Range.max;
                     spo2Chart.update('none');
                     
-                    // Update Flex Chart
+                    // Update Flex Chart (auto-scale to data range)
                     flexChart.data.labels = labels;
                     flexChart.data.datasets[0].data = data.flex_voltage;
-                    const flexRange = computeDataRange(data.flex_voltage);
-                    flexChart.options.scales.y.min = flexRange.min;
-                    flexChart.options.scales.y.max = flexRange.max;
+                    if (Array.isArray(data.flex_voltage) && data.flex_voltage.length > 0) {
+                        const flexRange = computeDataRange(data.flex_voltage);
+                        // If the computed min/max are identical or very close, provide a small padding
+                        if (flexRange && typeof flexRange.min === 'number' && typeof flexRange.max === 'number') {
+                            const min = flexRange.min;
+                            const max = flexRange.max;
+                            if (Math.abs(max - min) < 0.02) {
+                                flexChart.options.scales.y.min = Math.max(0, min - 0.02);
+                                flexChart.options.scales.y.max = max + 0.02;
+                            } else {
+                                flexChart.options.scales.y.min = min;
+                                flexChart.options.scales.y.max = max;
+                            }
+                        }
+                    }
                     flexChart.update('none');
 
                     // After updating raw charts, fetch inference and overlay markers
@@ -1502,42 +2126,30 @@
                             }
 
                             const eventSpans = buildEventSpans(inf, data.created_ats);
-                            hrChart.options.plugins.eventShading.spans = eventSpans;
-                            spo2Chart.options.plugins.eventShading.spans = eventSpans;
-                            flexChart.options.plugins.eventShading.spans = eventSpans;
+                            hrChart.options.plugins.eventShading.spans = getChartEventSpans(eventSpans, 'hr');
+                            spo2Chart.options.plugins.eventShading.spans = getChartEventSpans(eventSpans, 'spo2');
+                            flexChart.options.plugins.eventShading.spans = getChartEventSpans(eventSpans, 'flex');
 
                             // Bin event windows into per-minute buckets
-                            const { minuteLabels, minutePreds } = binEventsToMinutes(
+                            const { minuteLabels, minutePreds, minuteTypes } = binEventsToMinutes(
                                 inf.start_ts || [],
                                 inf.end_ts || [],
                                 inf.event_flag || inf.pred || [],
-                                data.created_ats
+                                data.created_ats,
+                                inf.event_type || []
                             );
                             
                             // Update prediction timeline chart
                             predictionChart.data.labels = minuteLabels;
                             predictionChart.data.datasets[0].data = minutePreds;
-                            predictionChart.options.plugins.eventShading.spans = eventSpans;
+                            predictionChart.eventTypes = minuteTypes; // Store event types for tooltip display
+                            predictionChart.options.plugins.eventShading.spans = getTimelineEventSpans([
+                                getChartEventSpans(eventSpans, 'hr'),
+                                getChartEventSpans(eventSpans, 'spo2'),
+                                getChartEventSpans(eventSpans, 'flex')
+                            ]);
                             predictionChart.update('none');
 
-                            // Map inference window indices directly onto the HR series (for backward compatibility)
-                            const predDataset = hrChart.data.datasets[1];
-
-                            // Clear existing
-                            predDataset.data = new Array(labels.length).fill(null);
-                            predDataset.backgroundColor = new Array(labels.length).fill('rgba(0,0,0,0)');
-
-                            for (let i = 0; i < (inf.end_ts || []).length; i++) {
-                                const eventFlag = Number(inf.event_flag && inf.event_flag[i] !== undefined ? inf.event_flag[i] : inf.pred[i]);
-                                const idx = Number(inf.window_end_idx[i]);
-                                if (!Number.isNaN(idx) && idx >= 0 && idx < data.hr.length) {
-                                    // place marker at the HR value at the end of each inference window
-                                    predDataset.data[idx] = data.hr[idx];
-                                    predDataset.backgroundColor[idx] = eventFlag == 1 ? 'rgba(231,76,60,0.95)' : 'rgba(46,204,113,0.95)';
-                                }
-                            }
-
-                            hrChart.update('none');
                             // Render inference stats and table
                             renderInference(inf, labels, data.hr, data.created_ats);
                         })
@@ -1556,7 +2168,10 @@
         function updateStatus(dataPoints) {
             const now = new Date();
             const statusEl = document.getElementById('status');
-            statusEl.textContent = `Last updated: ${now.toLocaleTimeString()} | Data points: ${dataPoints}`;
+            const selectedDate = getSelectedDate();
+            statusEl.textContent = selectedDate
+                ? `Viewing: ${selectedDate} | Last updated: ${now.toLocaleTimeString()} | Data points: ${dataPoints}`
+                : `Last updated: ${now.toLocaleTimeString()} | Data points: ${dataPoints}`;
             statusEl.classList.remove('loading');
         }
         
@@ -1606,22 +2221,37 @@
 
             // Register event spans on HR and SpO2 charts
             if (hrChart && hrChart.options && hrChart.options.plugins) {
-                hrChart.options.plugins.eventShading.spans = eventSpans;
+                hrChart.options.plugins.eventShading.spans = getChartEventSpans(eventSpans, 'hr');
                 hrChart.update('none');
             }
             if (spo2Chart && spo2Chart.options && spo2Chart.options.plugins) {
-                spo2Chart.options.plugins.eventShading.spans = eventSpans;
+                spo2Chart.options.plugins.eventShading.spans = getChartEventSpans(eventSpans, 'spo2');
                 spo2Chart.update('none');
             }
             if (flexChart && flexChart.options && flexChart.options.plugins) {
-                flexChart.options.plugins.eventShading.spans = eventSpans;
+                flexChart.options.plugins.eventShading.spans = getChartEventSpans(eventSpans, 'flex');
                 flexChart.update('none');
             }
 
             // Populate sidebar table with recent events (show most recent first, limit to 20)
+            const timeRangeMs = getTimeRangeMillis();
+            let latestTimestamp = null;
+            if (timeRangeMs !== null && labels && labels.length > 0) {
+                // Get the latest timestamp from the fetched vitals data
+                latestTimestamp = new Date(labels[labels.length - 1]).getTime();
+            }
+
             let count = 0;
             for (let i = inf.end_ts.length - 1; i >= 0 && count < 20; i--) {
                 if (Number(eventFlags[i]) === 1) {  // Only show flagged events
+                    // Filter by time range if not using calendar date picker
+                    if (timeRangeMs !== null && latestTimestamp !== null) {
+                        const eventTime = new Date(inf.end_ts[i]).getTime();
+                        if (eventTime < latestTimestamp - timeRangeMs) {
+                            continue; // Skip events outside the time range
+                        }
+                    }
+
                     const tr = document.createElement('tr');
                     const meta = getEventMeta(inf.event_reason && inf.event_reason[i], inf.event_type && inf.event_type[i]);
                     const timeStr = new Date(inf.end_ts[i]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -1651,11 +2281,40 @@
             });
             updateCharts();
             
+            function startAutoRefresh() {
+                // Clear old interval if any
+                if (refreshIntervalId) {
+                    clearInterval(refreshIntervalId);
+                }
+                // Start new interval with adaptive rate
+                const interval = getRefreshInterval();
+                refreshIntervalId = setInterval(updateCharts, interval);
+            }
+
+            // Start initial auto-refresh
+            startAutoRefresh();
+
+            // Restart auto-refresh when user changes time range
             document.getElementById('view-length').addEventListener('change', () => {
+                clearSelectedDate();
                 updateCharts(true);
+                startAutoRefresh();
             });
-            
-            setInterval(updateCharts, REFRESH_INTERVAL);
+
+            document.getElementById('dashboard-date').addEventListener('change', () => {
+                updateCharts(true);
+                startAutoRefresh();
+            });
+
+            document.getElementById('dashboard-date-clear').addEventListener('click', () => {
+                clearSelectedDate();
+                const viewLength = document.getElementById('view-length');
+                if (viewLength) {
+                    viewLength.value = '10m';
+                }
+                updateCharts(true);
+                startAutoRefresh();
+            });
         });
     </script>
 </body>

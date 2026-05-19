@@ -1,0 +1,28 @@
+[Tue May 19 07:35:28 2026] PHP 8.5.5 Development Server (http://127.0.0.1:8000) started
+[Tue May 19 07:35:30 2026] 127.0.0.1:49430 Accepted
+[Tue May 19 07:35:34 2026] 127.0.0.1:49430 [200]: GET /php_files/get_inference.php?minutes=5
+[Tue May 19 07:35:34 2026] 127.0.0.1:49430 Closing
+[Tue May 19 07:35:34 2026] 127.0.0.1:49439 Accepted
+[Tue May 19 07:35:37 2026] 127.0.0.1:49439 [200]: GET /php_files/get_inference.php?hours=1
+[Tue May 19 07:35:37 2026] 127.0.0.1:49439 Closing
+[Tue May 19 07:36:03 2026] 127.0.0.1:49525 Accepted
+[Tue May 19 07:36:13 2026] 127.0.0.1:49525 [200]: GET /php_files/get_inference.php?hours=24
+[Tue May 19 07:36:13 2026] 127.0.0.1:49525 Closing
+[Tue May 19 07:36:13 2026] 127.0.0.1:49550 Accepted
+[Tue May 19 07:36:23 2026] 127.0.0.1:49550 [200]: GET /php_files/get_inference.php?hours=48
+[Tue May 19 07:36:23 2026] 127.0.0.1:49550 Closing
+[Tue May 19 07:36:43 2026] 127.0.0.1:49626 Accepted
+[Tue May 19 07:36:48 2026] 127.0.0.1:49626 [200]: GET /php_files/get_inference.php?hours=1
+[Tue May 19 07:36:48 2026] 127.0.0.1:49626 Closing
+[Tue May 19 07:37:01 2026] 127.0.0.1:49675 Accepted
+[Tue May 19 07:37:01 2026] 127.0.0.1:49675 [200]: GET /php_files/get_vitals.php?hours=24
+[Tue May 19 07:37:01 2026] 127.0.0.1:49675 Closing
+[Tue May 19 07:37:01 2026] 127.0.0.1:49676 Accepted
+[Tue May 19 07:37:11 2026] 127.0.0.1:49676 [200]: GET /php_files/get_inference.php?hours=24
+[Tue May 19 07:37:11 2026] 127.0.0.1:49676 Closing
+[Tue May 19 07:37:19 2026] 127.0.0.1:49720 Accepted
+[Tue May 19 07:37:19 2026] 127.0.0.1:49720 [200]: GET /public/dashboard.html
+[Tue May 19 07:37:19 2026] 127.0.0.1:49720 Closing
+[Tue May 19 07:40:18 2026] 127.0.0.1:50180 Accepted
+[Tue May 19 07:40:18 2026] 127.0.0.1:50180 [200]: GET /public/dashboard.html
+[Tue May 19 07:40:18 2026] 127.0.0.1:50180 Closing

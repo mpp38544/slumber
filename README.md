@@ -1,4 +1,4 @@
-- Slumber — Simple Sleep Screening
+Slumber - Simple Sleep Screening
 
 <!-- Dashboard images -->
 ![Dashboard 1](assets/dashboard1.png)
